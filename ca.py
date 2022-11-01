@@ -3,7 +3,7 @@ import numpy as np
 from pyics import Model
 
 
-def decimal_to_base_k(n, k):
+def decimal_to_base_k(n, k, r):
     """Converts a given decimal (i.e. base-10 integer) to a list containing the
     base-k equivalant.
 
@@ -12,9 +12,19 @@ def decimal_to_base_k(n, k):
     new_base = []
     while n > 0:
         new_base.insert(0, n % k)
-        n = int(np.floor(n / k))
+        n = int(n / k)
+
+    while len(new_base) < (2 * r + 1):
+        new_base.insert(0, 0)
 
     return new_base
+
+
+def configs(r, k):
+    """Create list with all possible configurations for a specific base-k and
+    range r."""
+    max_index = k ** (2 * r + 1) - 1
+    return [decimal_to_base_k(i, k, r) for i in np.arange(max_index, -1, -1)]
 
 
 class CASim(Model):
@@ -22,20 +32,20 @@ class CASim(Model):
         Model.__init__(self)
 
         self.t = 0
-        self.rule_set = []
+        self.rule_dict = {}
         self.config = None
 
-        self.make_param('r', 1)
-        self.make_param('k', 2)
-        self.make_param('width', 50)
-        self.make_param('height', 50)
-        self.make_param('rule', 30, setter=self.setter_rule)
+        self.make_param("r", 1)
+        self.make_param("k", 3)
+        self.make_param("width", 15)
+        self.make_param("height", 50)
+        self.make_param("rule", 55, setter=self.setter_rule)
 
     def setter_rule(self, val):
         """Setter for the rule parameter, clipping its value between 0 and the
         maximum possible rule number."""
         rule_set_size = self.k ** (2 * self.r + 1)
-        max_rule_number = self.k ** rule_set_size
+        max_rule_number = self.k**rule_set_size
         return max(0, min(val, max_rule_number - 1))
 
     def build_rule_set(self):
@@ -46,10 +56,13 @@ class CASim(Model):
         [0, ..., 0, 1, 0, 2, 1] (length 27). This means that for example
         [2, 2, 2] -> 0 and [0, 0, 1] -> 2."""
 
-        new_base = decimal_to_base_k(self.rule, self.k)
-        zeros = self.k ** (2*self.r + 1) - len(new_base)
-        self.rule_set = [0 for zero in range(zeros)]
-        self.rule_set += new_base
+        new_base = decimal_to_base_k(self.rule, self.k, self.r)
+        zeros = self.k ** (2 * self.r + 1) - len(new_base)
+        rule_set = [0 for _ in range(zeros)] + new_base
+        configurations = configs(self.r, self.k)
+
+        for config, rule in zip(configurations, rule_set):
+            self.rule_dict[f"{config}"] = rule
 
     def check_rule(self, inp):
         """Returns the new state based on the input states.
@@ -57,13 +70,14 @@ class CASim(Model):
         The input state will be an array of 2r+1 items between 0 and k, the
         neighbourhood which the state of the new cell depends on."""
 
-        return ...
+        return self.rule_dict[f"{inp}"]
 
     def setup_initial_row(self):
         """Returns an array of length `width' with the initial state for each of
         the cells in the first row. Values should be between 0 and k."""
-
-        return np.zeros(self.width)
+        initial_row = [0] * self.width
+        initial_row[int(self.width / 2)] = 1
+        return initial_row
 
     def reset(self):
         """Initializes the configuration of the cells and converts the entered
@@ -83,10 +97,15 @@ class CASim(Model):
         plt.cla()
         if not plt.gca().yaxis_inverted():
             plt.gca().invert_yaxis()
-        plt.imshow(self.config, interpolation='none', vmin=0, vmax=self.k - 1,
-                cmap=matplotlib.cm.binary)
-        plt.axis('image')
-        plt.title('t = %d' % self.t)
+        plt.imshow(
+            self.config,
+            interpolation="none",
+            vmin=0,
+            vmax=self.k - 1,
+            cmap=matplotlib.cm.binary,
+        )
+        plt.axis("image")
+        plt.title("t = %d" % self.t)
 
     def step(self):
         """Performs a single step of the simulation by advancing time (and thus
@@ -100,14 +119,17 @@ class CASim(Model):
             # while wrapping around (e.g. index -1 is the last item on the row).
             # Since slices do not support this, we create an array with the
             # indices we want and use that to index our grid.
-            indices = [i % self.width
-                    for i in range(patch - self.r, patch + self.r + 1)]
+            indices = [
+                i % self.width for i in range(patch - self.r, patch + self.r + 1)
+            ]
             values = self.config[self.t - 1, indices]
+            values = [int(value) for value in values]
             self.config[self.t, patch] = self.check_rule(values)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     sim = CASim()
     from pyics import GUI
+
     cx = GUI(sim)
     cx.start()
