@@ -1,4 +1,5 @@
 import numpy as np
+from numpy.random import random
 
 from pyics import Model
 
@@ -32,14 +33,15 @@ class CASim(Model):
         Model.__init__(self)
 
         self.t = 0
+        self.init_row_prob = 0.7
         self.rule_dict = {}
         self.config = None
 
         self.make_param("r", 1)
-        self.make_param("k", 3)
-        self.make_param("width", 15)
-        self.make_param("height", 50)
-        self.make_param("rule", 55, setter=self.setter_rule)
+        self.make_param("k", 2)
+        self.make_param("width", 200)
+        self.make_param("height", 200)
+        self.make_param("rule", 5, setter=self.setter_rule)
 
     def setter_rule(self, val):
         """Setter for the rule parameter, clipping its value between 0 and the
@@ -75,8 +77,10 @@ class CASim(Model):
     def setup_initial_row(self):
         """Returns an array of length `width' with the initial state for each of
         the cells in the first row. Values should be between 0 and k."""
-        initial_row = [0] * self.width
-        initial_row[int(self.width / 2)] = 1
+
+        initial_row = [
+            1 if random() > self.init_row_prob else 0 for _ in range(self.width)
+        ]
         return initial_row
 
     def reset(self):
