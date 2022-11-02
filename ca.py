@@ -33,7 +33,7 @@ class CASim(Model):
         Model.__init__(self)
 
         self.t = 0
-        self.init_row_prob = 0.7
+        self.init_row_prob = 0.9
         self.rule_dict = {}
         self.config = None
 
