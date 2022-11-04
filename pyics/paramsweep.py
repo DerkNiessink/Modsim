@@ -44,7 +44,7 @@ def paramsweep(model, repetitions, param_space, measure_attrs, max_iter=0,
                csv_base_filename=None, measure_interval=1):
     """Performs a parameter sweep over Model instance `model', setting the
     parameters defined in the dictionary `param_space', each combination
-    `repetitions' times, and outputs all measurements as defined by
+    `repetitions self.init_row_prob ' times, and outputs all measurements as defined by
     `measure_attrs' to a csv file.
 
     Measurements are returned as an array with index 0 containing all

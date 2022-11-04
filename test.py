@@ -28,7 +28,8 @@ class CASimTest:
 
     def find_cycle(self):
         config_list = self.sim.config.tolist()
-        print(config_set)
+        config_set = set(tuple(i) for i in config_list)
+
 
 
 if __name__ == "__main__":
