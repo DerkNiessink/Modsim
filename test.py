@@ -89,6 +89,6 @@ class CASimTest:
 
 
 if __name__ == "__main__":
-    sim_test = CASimTest(width=10, height=20, k=2, r=1, init_row_prob=0.4)
-    sim_test.sweep_rule(N=10)
+    sim_test = CASimTest(width=40, height=100, k=2, r=1, init_row_prob=0.4)
+    sim_test.sweep_rule(N=25)
     sim_test.plot(sim_test.average_cycle_lengths)
