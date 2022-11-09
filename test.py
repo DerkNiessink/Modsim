@@ -14,6 +14,7 @@ class CASimTest:
         self.sim.r = r
         self.max_rule_num = self.sim.k ** (self.sim.k ** (2 * self.sim.r + 1))
         self.average_cycle_lengths = []
+        self.errors = []
 
     def run(self):
         t = 0
@@ -36,6 +37,10 @@ class CASimTest:
                 cycle_lengths.append(self.cycle_length(index_dict))
 
             self.average_cycle_lengths.append(np.mean(cycle_lengths))
+
+            # Use the standard error of the mean (SEM) as average cycle length
+            # errors, because cycle_lengths is a distribution of means.
+            self.errors.append(np.std(cycle_lengths) / np.sqrt(len(cycle_lengths)))
 
     def make_index_dict(self):
         """Make dictionary with a set of rows as keys and their indexes in the
@@ -72,7 +77,7 @@ class CASimTest:
 
         return np.mean(cycle_lengths)
 
-    def plot(self, cycle_lengths):
+    def plot(self):
         rules = [rule for rule in range(self.max_rule_num)]
         figure = plt.figure()
         plt.ylabel("Average cycle length")
@@ -83,12 +88,12 @@ class CASimTest:
             loc="left",
         )
         plt.xlim(-1, self.max_rule_num + 1)
-        plt.plot(rules, cycle_lengths, ".")
+        plt.errorbar(rules, self.average_cycle_lengths, yerr=self.errors, fmt=".")
         figure.savefig("cycle_lengths")
         plt.show()
 
 
 if __name__ == "__main__":
     sim_test = CASimTest(width=40, height=100, k=2, r=1, init_row_prob=0.4)
-    sim_test.sweep_rule(N=25)
-    sim_test.plot(sim_test.average_cycle_lengths)
+    sim_test.sweep_rule(N=10)
+    sim_test.plot()
