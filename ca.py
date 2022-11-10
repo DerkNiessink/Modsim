@@ -281,8 +281,10 @@ class CASimFig:
         plt.scatter(rules, self.average_cycle_lengths, c=color_index_list, marker="o")
 
         legend_elements = [
-            Patch(facecolor=color, edgecolor="w") for color in color_list
+            Patch(facecolor=color, edgecolor="w")
+            for color in ["blue", "red", "green", "purple"]
         ]
+
         plt.legend(
             handles=legend_elements,
             labels=[f"Class 1", f"Class 2", f"Class 3", f"Class 4"],
