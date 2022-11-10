@@ -1,10 +1,17 @@
 import numpy as np
 import matplotlib.pyplot as plt
-
+import csv
 from ca import CASim
 
 
 class CASimTest:
+    def csv_lst():
+        csv_filename = "rule_class_wolfram.csv"
+        with open(csv_filename) as f:
+            reader = csv.reader(f)
+            lst = list(reader)
+        return lst
+
     def __init__(self, width, height, k, r, init_row_prob):
         self.sim = CASim()
         self.sim.init_row_prob = init_row_prob
@@ -80,6 +87,15 @@ class CASimTest:
     def plot(self):
         rules = [rule for rule in range(self.max_rule_num)]
         figure = plt.figure()
+
+        lst = CASimTest.csv_lst()
+        color_list = ["purple", "blue", "red", "green", "yellow"]
+
+        color_index_list = []
+        for pair in lst:
+            ca_code = eval(pair[1])
+            color_index_list.append(color_list[ca_code])
+
         plt.ylabel("Average cycle length")
         plt.xlabel("Rule number (k)")
         plt.title(
@@ -88,7 +104,17 @@ class CASimTest:
             loc="left",
         )
         plt.xlim(-1, self.max_rule_num + 1)
-        plt.errorbar(rules, self.average_cycle_lengths, yerr=self.errors, fmt=".")
+
+        plt.errorbar(
+            rules,
+            self.average_cycle_lengths,
+            yerr=self.errors,
+            fmt=".",
+            ecolor=color_index_list,
+            mfc="white",
+            mec="white",
+        )
+        plt.scatter(rules, self.average_cycle_lengths, c=color_index_list, marker="o")
         figure.savefig("cycle_lengths")
         plt.show()
 

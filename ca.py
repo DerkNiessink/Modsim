@@ -1,6 +1,6 @@
 import numpy as np
 from numpy.random import random
-
+from matplotlib.patches import Patch
 from pyics import Model
 
 
@@ -109,7 +109,16 @@ class CASim(Model):
             cmap=matplotlib.cm.binary,
         )
         plt.axis("image")
-        plt.title("t = %d" % self.t)
+        plt.ylabel("time")
+        plt.xlabel("position")
+
+        colors = ['white', 'black']
+        legend_elements = [Patch(facecolor=color, edgecolor='w') for color in colors]
+        plt.legend(handles=legend_elements,
+          labels=[f"value = 0", f"value = 1"],
+          loc="upper left", bbox_to_anchor=[1, 1])
+        
+        plt.title("%d generations" % self.t)
 
     def step(self):
         """Performs a single step of the simulation by advancing time (and thus
