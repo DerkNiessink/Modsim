@@ -1,3 +1,17 @@
+"""
+"Ca.py"
+
+Developed by:
+Jenna de Vries and Derk Niessink
+
+
+
+
+
+
+"""
+
+
 import numpy as np
 import matplotlib.pyplot as plt
 from numpy.random import random
