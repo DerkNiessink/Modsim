@@ -1,4 +1,0 @@
-This plot shows a 1 dimensional cellular automata
-
-        # txt="I need the caption to be present a little below X-axis"
-        # plt.figtext(0.5, -0.1, txt, wrap=True, horizontalalignment='center', fontsize=12)
