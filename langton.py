@@ -13,7 +13,7 @@ class CALangtonTest:
 
     def run(self):
         t = 0
-        self.sim.reset()
+        self.sim.reset(langton=True)
         while t < self.sim.height:
             self.sim.step()
             t += 1
@@ -27,3 +27,8 @@ class CALangtonTest:
 
     def plot(self):
         pass
+
+
+if __name__ == "__main__":
+    test = CALangtonTest(width=5, height=10, k=2, r=1, init_row_prob=0.4)
+    test.sweep_langton(N=10)
