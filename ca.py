@@ -168,13 +168,6 @@ class CASim(Model):
 
 
 class CASimFig:
-    def csv_lst():
-        csv_filename = "rule_class_wolfram.csv"
-        with open(csv_filename) as f:
-            reader = csv.reader(f)
-            lst = list(reader)
-        return lst
-
     def __init__(self, width, height, k, r, init_row_prob):
         self.sim = CASim()
         self.sim.init_row_prob = init_row_prob
@@ -247,6 +240,13 @@ class CASimFig:
 
         return np.mean(cycle_lengths)
 
+    def csv_lst():
+        csv_filename = "rule_class_wolfram.csv"
+        with open(csv_filename) as f:
+            reader = csv.reader(f)
+            lst = list(reader)
+        return lst
+
     def plot(self):
         rules = [rule for rule in range(self.max_rule_num)]
         figure = plt.figure()
@@ -293,6 +293,10 @@ class CASimFig:
         )
         plt.figure(figsize=(10, 10))
         figure.savefig("cycle_lengths", bbox_inches="tight")
+
+
+class CALangtonTest():
+
 
 
 if __name__ == "__main__":
