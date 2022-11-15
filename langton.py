@@ -13,7 +13,7 @@ class CALangtonTest:
 
     def run(self):
         t = 0
-        self.sim.reset(langton=True)
+        self.sim.reset(langton=True, lamb)
         while t < self.sim.height:
             self.sim.step()
             t += 1

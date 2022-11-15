@@ -89,7 +89,8 @@ class CASim(Model):
         for config, rule in zip(configurations, rule_set):
             self.rule_dict[f"{config}"] = rule
 
-    def build_langton_set(self):
+    def build_langton_set(self, lamb):
+
         pass
 
     def check_rule(self, inp):
@@ -109,7 +110,7 @@ class CASim(Model):
         ]
         return initial_row
 
-    def reset(self, langton):
+    def reset(self, langton=False, lamb=None):
         """Initializes the configuration of the cells and converts the entered
         rule number to a rule set."""
 
@@ -117,7 +118,7 @@ class CASim(Model):
         self.config = np.zeros([self.height, self.width])
         self.config[0, :] = self.setup_initial_row()
         if langton:
-            self.build_langton_set()
+            self.build_langton_set(lamb)
         else:
             self.build_rule_set()
 
@@ -185,7 +186,7 @@ class CASimFig:
 
     def run(self):
         t = 0
-        self.sim.reset(langton=False)
+        self.sim.reset()
         while t < self.sim.height:
             self.sim.step()
             t += 1
