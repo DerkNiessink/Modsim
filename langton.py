@@ -1,5 +1,9 @@
 from ca import CASim
+from ca import configs
+
+from collections import Counter
 import numpy as np
+import matplotlib.pyplot as plt
 
 
 class CALangtonTest:
@@ -10,6 +14,11 @@ class CALangtonTest:
         self.sim.height = height
         self.sim.k = k
         self.sim.r = r
+        self.all_configs = configs(self.sim.r, self.sim.k)
+        self.size = width * height
+        self.average_shannons = []
+        self.errors = []
+        self.lambdas = []
 
     def run(self, lamb):
         t = 0
@@ -18,18 +27,57 @@ class CALangtonTest:
             self.sim.step()
             t += 1
 
-    def sweep_langton(self, N):
-        for lamb in np.arange(0, 1, 1 / N):
-            self.run(lamb)
-            self.shannon(self.sim.config)
+    def sweep_langton(self, N, steps):
+        for lamb in np.arange(0.01, 1, 1 / steps):
+            shannons = []
+            for _ in range(N):
+                self.run(lamb)
+                shannons.append(self.shannon(self.sim.config))
+
+            self.average_shannons.append(np.mean(shannons))
+            self.errors.append(np.std(shannons) / np.sqrt(len(shannons)))
+            self.lambdas.append(lamb)
 
     def shannon(self, config):
-        print(config)
+        count_dict = self.count_neighboorhood_configs(config)
+
+        shannon = 0
+        for key in count_dict:
+            prob = count_dict[key] / self.size
+            shannon += -prob * np.log2(prob)
+        return shannon
+
+    def count_neighboorhood_configs(self, config):
+        neighborhood_configs = []
+        for state in config.tolist():
+
+            # Take boundary conditions in account
+            state.insert(0, state[-1])
+            state.append(state[1])
+
+            neighborhood_configs.extend(
+                [(state[i], state[i + 1], state[i + 2]) for i in range(len(state) - 2)]
+            )
+
+        return dict(Counter(neighborhood_configs))
 
     def plot(self):
-        pass
+        figure = plt.figure(figsize=(10, 10))
+
+        plt.ylabel("Average shannon entropy")
+        plt.xlabel("$\lambda$")
+        plt.ylim(0, 2.5)
+
+        plt.errorbar(
+            self.lambdas,
+            self.average_shannons,
+            yerr=self.errors,
+            fmt=".",
+        )
+        figure.savefig("langton")
 
 
 if __name__ == "__main__":
-    test = CALangtonTest(width=10, height=10, k=2, r=1, init_row_prob=0.5)
-    test.sweep_langton(N=10)
+    test = CALangtonTest(width=50, height=100, k=2, r=1, init_row_prob=0.9)
+    test.sweep_langton(N=60, steps=50)
+    test.plot()

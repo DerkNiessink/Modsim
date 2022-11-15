@@ -96,7 +96,7 @@ class CASim(Model):
             if np.random.rand() > lamb:
                 rule_set.append(0)
             else:
-                rule_set.append(1)
+                rule_set.append(np.random.randint(1, self.k))
 
         configurations = configs(self.r, self.k)
 
