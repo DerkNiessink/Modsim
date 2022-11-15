@@ -19,6 +19,7 @@ this file. The plot is colored in with data from the file: "rule_class_wolfram.c
 
 import numpy as np
 import matplotlib.pyplot as plt
+import matplotlib
 from numpy.random import random
 from matplotlib.patches import Patch
 import csv
@@ -69,7 +70,7 @@ class CASim(Model):
         """Setter for the rule parameter, clipping its value between 0 and the
         maximum possible rule number."""
         rule_set_size = self.k ** (2 * self.r + 1)
-        max_rule_number = self.k ** rule_set_size
+        max_rule_number = self.k**rule_set_size
         return max(0, min(val, max_rule_number - 1))
 
     def build_rule_set(self):
@@ -88,6 +89,10 @@ class CASim(Model):
         for config, rule in zip(configurations, rule_set):
             self.rule_dict[f"{config}"] = rule
 
+    def build_langton_set(self, lamb):
+
+        pass
+
     def check_rule(self, inp):
         """Returns the new state based on the input states.
 
@@ -105,20 +110,20 @@ class CASim(Model):
         ]
         return initial_row
 
-    def reset(self):
+    def reset(self, langton=False, lamb=None):
         """Initializes the configuration of the cells and converts the entered
         rule number to a rule set."""
 
         self.t = 0
         self.config = np.zeros([self.height, self.width])
         self.config[0, :] = self.setup_initial_row()
-        self.build_rule_set()
+        if langton:
+            self.build_langton_set(lamb)
+        else:
+            self.build_rule_set()
 
     def draw(self):
         """Draws the current state of the grid."""
-
-        import matplotlib
-        import matplotlib.pyplot as plt
 
         plt.cla()
         if not plt.gca().yaxis_inverted():
@@ -168,13 +173,6 @@ class CASim(Model):
 
 
 class CASimFig:
-    def csv_lst():
-        csv_filename = "rule_class_wolfram.csv"
-        with open(csv_filename) as f:
-            reader = csv.reader(f)
-            lst = list(reader)
-        return lst
-
     def __init__(self, width, height, k, r, init_row_prob):
         self.sim = CASim()
         self.sim.init_row_prob = init_row_prob
@@ -247,6 +245,13 @@ class CASimFig:
 
         return np.mean(cycle_lengths)
 
+    def csv_lst():
+        csv_filename = "rule_class_wolfram.csv"
+        with open(csv_filename) as f:
+            reader = csv.reader(f)
+            lst = list(reader)
+        return lst
+
     def plot(self):
         rules = [rule for rule in range(self.max_rule_num)]
         figure = plt.figure()
@@ -306,6 +311,6 @@ if __name__ == "__main__":
 
     else:
         # Test paramaters (including N) can be adjusted.
-        sim_test = CASimFig(width=40, height=200, k=2, r=1, init_row_prob=0.4)
-        sim_test.sweep_rule(N=40)
+        sim_test = CASimFig(width=10, height=5, k=2, r=1, init_row_prob=0.4)
+        sim_test.sweep_rule(N=2)
         sim_test.plot()
