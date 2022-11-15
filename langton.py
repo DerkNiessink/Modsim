@@ -1,4 +1,5 @@
 from ca import CASim
+import numpy as np
 
 
 class CALangtonTest:
@@ -9,26 +10,26 @@ class CALangtonTest:
         self.sim.height = height
         self.sim.k = k
         self.sim.r = r
-        self.max_rule_num = self.sim.k ** (self.sim.k ** (2 * self.sim.r + 1))
 
-    def run(self):
+    def run(self, lamb):
         t = 0
-        self.sim.reset(langton=True, lamb)
+        self.sim.reset(langton=True, lamb=lamb)
         while t < self.sim.height:
             self.sim.step()
             t += 1
 
     def sweep_langton(self, N):
-        for rule in range(self.max_rule_num):
-            self.sim.rule = rule
+        for lamb in np.arange(0, 1, 1 / N):
+            self.run(lamb)
+            self.shannon(self.sim.config)
 
-            for _ in range(N):
-                self.run()
+    def shannon(self, config):
+        print(config)
 
     def plot(self):
         pass
 
 
 if __name__ == "__main__":
-    test = CALangtonTest(width=5, height=10, k=2, r=1, init_row_prob=0.4)
+    test = CALangtonTest(width=10, height=10, k=2, r=1, init_row_prob=0.5)
     test.sweep_langton(N=10)
