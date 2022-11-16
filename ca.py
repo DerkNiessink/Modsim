@@ -83,6 +83,10 @@ class CASim(Model):
         self.make_rule_dict(rule_set)
 
     def build_langton_set_rt(self, lamb):
+        """Build the rule set with the random table method. Each rule as a
+        probability of 1 - lamb to be set in the quiescent state (= 0),
+        else set the rule to be in a random state."""
+
         rule_set = []
         for _ in range(self.rule_set_size):
             g = np.random.rand()
@@ -104,6 +108,8 @@ class CASim(Model):
         return lamb
 
     def make_rule_dict(self, rule_set):
+        """Make a dictionary with all configurations as keys and the
+        corresponding rules as values"""
         configurations = configs(self.r, self.k)
         for config, rule in zip(configurations, rule_set):
             self.rule_dict[f"{config}"] = rule
@@ -123,8 +129,13 @@ class CASim(Model):
         return [np.random.randint(0, self.k) for _ in range(self.width)]
 
     def reset(self, rule_set_mode="rule_number", lamb=None):
-        """Initializes the configuration of the cells and converts the entered
-        rule number to a rule set."""
+        """Initializes the configuration of the cells and build a rule set with
+        the given method: rule_set_mode.
+
+        - rule_set_mode: can be "rule_number" (default), "random" or "walkthrough".
+        - lamb: if the rule_set_mode is "random" or "walkthrough", a lamb has to
+                be given between 0 and 1. Default = None.
+        """
 
         self.t = 0
         self.config = np.zeros([self.height, self.width])

@@ -27,6 +27,9 @@ class CALangtonTest:
             t += 1
 
     def sweep_langton(self, N, steps):
+        """Run the simulation for each lambda between 0 and 1 and with
+        specified number of steps, N times. Compute the average shannon entropy
+        for each of the N different random intitial confgurations."""
         for lamb in np.arange(0.01, 1, 1 / steps):
             shannons = []
             for _ in range(N):
@@ -38,6 +41,8 @@ class CALangtonTest:
             self.lambdas.append(lamb)
 
     def shannon(self, config):
+        """Compute the average shannon entropy over all states (i.e row in
+        simulation config)."""
         count_dict = self.count_neighboorhood_configs(config)
 
         shannon = 0
@@ -47,6 +52,15 @@ class CALangtonTest:
         return shannon
 
     def count_neighboorhood_configs(self, config):
+        """Count each of the possible neighboorhood configurations. A
+        "neighborhood" consists of three sequential states and is effected by
+        the periodic boundary condition.
+
+        Example:
+        config = [[1 1 1 0] [0 1 1 0]] returns
+        {(1 1 1): 1, (1 1 0): 2, (1 0 1): 1, (0 1 1): 2, (1 0 0): 1, (0 0 1): 1}
+
+        """
         neighborhood_configs = []
         for state in config.tolist():
 
