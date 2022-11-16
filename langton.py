@@ -6,7 +6,6 @@ from collections import Counter
 import numpy as np
 import matplotlib.pyplot as plt
 
-
 class CALangtonTest:
     def __init__(self, width, height, k, r, init_row_prob):
         self.sim = CASim()
@@ -15,8 +14,6 @@ class CALangtonTest:
         self.sim.height = height
         self.sim.k = k
         self.sim.r = r
-
-    def random_table(self, lamb):
         self.all_configs = configs(self.sim.r, self.sim.k)
         self.size = width * height
         self.average_shannons = []
@@ -27,22 +24,9 @@ class CALangtonTest:
         t = 0
         self.sim.reset(langton=True, lamb=lamb)
         while t < self.sim.height:
-            self.sim.step_rt()
+            self.sim.step()
             t += 1
 
-    def table_walk_through(self, lamb):
-        t = 0
-        self.sim.reset(langton=True, lamb=lamb)
-        while t < self.sim.height:
-            self.sim.step_twt()
-            t += 1
-
-
-    def sweep_langton(self, N):
-        lambda_steps=np.linspace(0,1,num=10)
-        for lamb in lambda_steps:
-            self.random_table(lamb)
-    
     def sweep_langton(self, N, steps):
         for lamb in np.arange(0.01, 1, 1 / steps):
             shannons = []
@@ -82,7 +66,6 @@ class CALangtonTest:
 
         plt.ylabel("Average shannon entropy")
         plt.xlabel("$\lambda$")
-        plt.ylim(0, 2.5)
 
         plt.errorbar(
             self.lambdas,
@@ -95,5 +78,5 @@ class CALangtonTest:
 
 if __name__ == "__main__":
     test = CALangtonTest(width=50, height=100, k=2, r=1, init_row_prob=0.9)
-    test.sweep_langton(N=60, steps=50)
+    test.sweep_langton(N=10, steps=20)
     test.plot()
