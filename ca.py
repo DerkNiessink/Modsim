@@ -96,15 +96,11 @@ class CASim(Model):
             g=np.random.rand()
             if g>lamb:
                 rule_set[i]=0
-            else:
-                rule_set[i]=1
-
+        
         configurations = configs(self.r, self.k)
 
         for config, rule in zip(configurations, rule_set):
             self.rule_dict[f"{config}"] = rule
-
-        return rule_set
 
     def build_langton_set_twt(self):
         length = self.k**(2*self.r+1)
@@ -115,12 +111,14 @@ class CASim(Model):
         index_list.remove(index)
         rule_set[index]=1
 
+        lamb = (len(rule_set)-len(index_list)) / len(rule_set)
+
         configurations = configs(self.r, self.k)
 
         for config, rule in zip(configurations, rule_set):
             self.rule_dict[f"{config}"] = rule
 
-        return rule_set
+        return lamb, rule_set           
 
     def check_rule(self, inp):
         """Returns the new state based on the input states.
