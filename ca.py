@@ -105,21 +105,18 @@ class CASim(Model):
             self.rule_dict[f"{config}"] = rule
 
 
-    def build_langton_set_twt(self):
-        length = self.k**(2*self.r+1)
-        rule_set = [0] * length
-        index_list=np.linspace(0,length)
-
+    def build_langton_set_twt(self, length, rule_set, index_list):
         index = np.random.choice(index_list)
         index_list.remove(index)
         rule_set[index]=1
 
         configurations = configs(self.r, self.k)
 
+        lamb = (len(rule_set) - len(index_list)) / len(rule_set)
         for config, rule in zip(configurations, rule_set):
             self.rule_dict[f"{config}"] = rule
 
-        return rule_set
+        return lamb
 
     def check_rule(self, inp):
         """Returns the new state based on the input states.
@@ -138,15 +135,21 @@ class CASim(Model):
         ]
         return initial_row
 
-    def reset(self, langton=False, lamb=None):
+    def reset(self, random=False, lamb=None, walkthrough = False):
         """Initializes the configuration of the cells and converts the entered
         rule number to a rule set."""
 
         self.t = 0
         self.config = np.zeros([self.height, self.width])
         self.config[0, :] = self.setup_initial_row()
-        if langton:
+        if random:
             self.build_langton_set_rt(lamb)
+
+        elif walkthrough:
+            length = self.k**(2*self.r+1)
+            rule_set = [0] * length
+            index_list=np.linspace(0,length)
+            self.lamb = self.build_langton_set_twt(lamb, length, rule_set, index_list)
         else:
             self.build_rule_set()
 

@@ -20,9 +20,9 @@ class CALangtonTest:
         self.errors = []
         self.lambdas = []
 
-    def run(self, lamb):
+    def run(self, random=False, lamb=None, walkthrough=False):
         t = 0
-        self.sim.reset(langton=True, lamb=lamb)
+        self.sim.reset(random, lamb, walkthrough)
         while t < self.sim.height:
             self.sim.step()
             t += 1
@@ -31,12 +31,14 @@ class CALangtonTest:
         for lamb in np.arange(0.01, 1, 1 / steps):
             shannons = []
             for _ in range(N):
-                self.run(lamb)
+                self.run(lamb = lamb, random=True)
                 shannons.append(self.shannon(self.sim.config))
 
             self.average_shannons.append(np.mean(shannons))
             self.errors.append(np.std(shannons) / np.sqrt(len(shannons)))
             self.lambdas.append(lamb)
+
+    
 
     def shannon(self, config):
         count_dict = self.count_neighboorhood_configs(config)
