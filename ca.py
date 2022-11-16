@@ -20,8 +20,6 @@ this file. The plot is colored in with data from the file: "rule_class_wolfram.c
 import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib
-from numpy.random import random
-import sys
 from pyics import Model
 
 
@@ -66,8 +64,9 @@ class CASim(Model):
     def setter_rule(self, val):
         """Setter for the rule parameter, clipping its value between 0 and the
         maximum possible rule number."""
-        rule_set_size = self.k ** (2 * self.r + 1)
-        max_rule_number = self.k**rule_set_size
+
+        self.rule_set_size = self.k ** (2 * self.r + 1)
+        max_rule_number = self.k**self.rule_set_size
         return max(0, min(val, max_rule_number - 1))
 
     def build_rule_set(self):
@@ -79,40 +78,35 @@ class CASim(Model):
         [2, 2, 2] -> 0 and [0, 0, 1] -> 2."""
 
         new_base = decimal_to_base_k(self.rule, self.k, self.r)
-        zeros = self.k ** (2 * self.r + 1) - len(new_base)
+        zeros = self.rule_set_size - len(new_base)
         rule_set = [0 for _ in range(zeros)] + new_base
-        configurations = configs(self.r, self.k)
-
-        for config, rule in zip(configurations, rule_set):
-            self.rule_dict[f"{config}"] = rule
+        self.make_rule_dict(rule_set)
 
     def build_langton_set_rt(self, lamb):
-        length = self.k ** (2 * self.r + 1)
         rule_set = []
-        for i in range(length):
+        for _ in range(self.rule_set_size):
             g = np.random.rand()
             if g > lamb:
                 rule_set.append(0)
             else:
                 rule_set.append(np.random.randint(1, self.k))
 
-        configurations = configs(self.r, self.k)
+        self.make_rule_dict(rule_set)
 
-        for config, rule in zip(configurations, rule_set):
-            self.rule_dict[f"{config}"] = rule
-
-    def build_langton_set_twt(self, length, rule_set, index_list):
+    def build_langton_set_twt(self, rule_set, index_list):
         index = np.random.choice(index_list)
         index_list.remove(index)
         rule_set[index] = 1
-
-        configurations = configs(self.r, self.k)
-
         lamb = (len(rule_set) - len(index_list)) / len(rule_set)
-        for config, rule in zip(configurations, rule_set):
-            self.rule_dict[f"{config}"] = rule
+
+        self.make_rule_dict(rule_set)
 
         return lamb
+
+    def make_rule_dict(self, rule_set):
+        configurations = configs(self.r, self.k)
+        for config, rule in zip(configurations, rule_set):
+            self.rule_dict[f"{config}"] = rule
 
     def check_rule(self, inp):
         """Returns the new state based on the input states.
@@ -128,23 +122,23 @@ class CASim(Model):
 
         return [np.random.randint(0, self.k) for _ in range(self.width)]
 
-    def reset(self, random=False, lamb=None, walkthrough=False):
+    def reset(self, rule_set_mode="rule_number", lamb=None):
         """Initializes the configuration of the cells and converts the entered
         rule number to a rule set."""
 
         self.t = 0
         self.config = np.zeros([self.height, self.width])
         self.config[0, :] = self.setup_initial_row()
-        if random:
-            self.build_langton_set_rt(lamb)
 
-        elif walkthrough:
-            length = self.k ** (2 * self.r + 1)
-            rule_set = [0] * length
-            index_list = np.linspace(0, length)
-            self.lamb = self.build_langton_set_twt(lamb, length, rule_set, index_list)
-        else:
-            self.build_rule_set()
+        match rule_set_mode:
+            case "rule_number":
+                self.build_rule_set()
+            case "random":
+                self.build_langton_set_rt(lamb)
+            case "walkthrough":
+                rule_set = [0] * self.rule_set_size
+                index_list = np.linspace(0, self.rule_set_size)
+                self.lamb = self.build_langton_set_twt(lamb, rule_set, index_list)
 
     def draw(self):
         """Draws the current state of the grid."""
@@ -167,6 +161,7 @@ class CASim(Model):
     def step(self):
         """Performs a single step of the simulation by advancing time (and thus
         row) and applying the rule to determine the state of the cells."""
+
         self.t += 1
         if self.t >= self.height:
             return True

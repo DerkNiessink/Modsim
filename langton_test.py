@@ -19,9 +19,9 @@ class CALangtonTest:
         self.errors = []
         self.lambdas = []
 
-    def run(self, random=False, lamb=None, walkthrough=False):
+    def run(self, mode, lamb):
         t = 0
-        self.sim.reset(random, lamb, walkthrough)
+        self.sim.reset(mode, lamb)
         while t < self.sim.height:
             self.sim.step()
             t += 1
@@ -30,7 +30,7 @@ class CALangtonTest:
         for lamb in np.arange(0.01, 1, 1 / steps):
             shannons = []
             for _ in range(N):
-                self.run(lamb=lamb, random=True)
+                self.run(mode="random", lamb=lamb)
                 shannons.append(self.shannon(self.sim.config))
 
             self.average_shannons.append(np.mean(shannons))
