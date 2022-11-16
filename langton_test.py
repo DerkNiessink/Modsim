@@ -1,15 +1,14 @@
 from ca import CASim
-import numpy as np
 from ca import configs
 
 from collections import Counter
 import numpy as np
 import matplotlib.pyplot as plt
 
+
 class CALangtonTest:
-    def __init__(self, width, height, k, r, init_row_prob):
+    def __init__(self, width, height, k, r):
         self.sim = CASim()
-        self.sim.init_row_prob = init_row_prob
         self.sim.width = width
         self.sim.height = height
         self.sim.k = k
@@ -31,14 +30,12 @@ class CALangtonTest:
         for lamb in np.arange(0.01, 1, 1 / steps):
             shannons = []
             for _ in range(N):
-                self.run(lamb = lamb, random=True)
+                self.run(lamb=lamb, random=True)
                 shannons.append(self.shannon(self.sim.config))
 
             self.average_shannons.append(np.mean(shannons))
             self.errors.append(np.std(shannons) / np.sqrt(len(shannons)))
             self.lambdas.append(lamb)
-
-    
 
     def shannon(self, config):
         count_dict = self.count_neighboorhood_configs(config)
@@ -79,6 +76,6 @@ class CALangtonTest:
 
 
 if __name__ == "__main__":
-    test = CALangtonTest(width=50, height=100, k=2, r=1, init_row_prob=0.9)
+    test = CALangtonTest(width=50, height=100, k=2, r=1)
     test.sweep_langton(N=10, steps=20)
     test.plot()
