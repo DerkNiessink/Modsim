@@ -61,6 +61,14 @@ class CASim(Model):
         self.make_param("height", 200)
         self.make_param("rule", 5, setter=self.setter_rule)
 
+        self.rule_set_size = self.k ** (2 * self.r + 1)
+
+    def init_twt(self):
+        # initialize all twt rules with quiscent state (= 0).
+        self.twt_rule_set = [0] * self.rule_set_size
+        self.twt_index_list = [i for i in range(self.rule_set_size)]
+        self.twt_lamb = 0
+
     def setter_rule(self, val):
         """Setter for the rule parameter, clipping its value between 0 and the
         maximum possible rule number."""
@@ -97,15 +105,14 @@ class CASim(Model):
 
         self.make_rule_dict(rule_set)
 
-    def build_langton_set_twt(self, rule_set, index_list):
-        index = np.random.choice(index_list)
-        index_list.remove(index)
-        rule_set[index] = 1
-        lamb = (len(rule_set) - len(index_list)) / len(rule_set)
-
-        self.make_rule_dict(rule_set)
-
-        return lamb
+    def build_langton_set_twt(self):
+        index = np.random.choice(self.twt_index_list)
+        self.twt_index_list.remove(index)
+        self.twt_rule_set[index] = np.random.randint(1, self.k)
+        self.twt_lamb = (len(self.twt_rule_set) - len(self.twt_index_list)) / len(
+            self.twt_rule_set
+        )
+        self.make_rule_dict(self.twt_rule_set)
 
     def make_rule_dict(self, rule_set):
         """Make a dictionary with all configurations as keys and the
@@ -128,13 +135,14 @@ class CASim(Model):
 
         return [np.random.randint(0, self.k) for _ in range(self.width)]
 
-    def reset(self, rule_set_mode="rule_number", lamb=None):
+    def reset(self, rule_set_mode="rule_number", lamb=None, new_rule_set=True):
         """Initializes the configuration of the cells and build a rule set with
         the given method: rule_set_mode.
 
         - rule_set_mode: can be "rule_number" (default), "random" or "walkthrough".
-        - lamb: if the rule_set_mode is "random" or "walkthrough", a lamb has to
-                be given between 0 and 1. Default = None.
+        - lamb: if the rule_set_mode is "random", a lamb has to be given between
+        0 and 1. Default = None.
+        - new_rule_set: can be True or False and only applies to "walkthrough".
         """
 
         self.t = 0
@@ -147,9 +155,8 @@ class CASim(Model):
             case "random":
                 self.build_langton_set_rt(lamb)
             case "walkthrough":
-                rule_set = [0] * self.rule_set_size
-                index_list = np.linspace(0, self.rule_set_size)
-                self.lamb = self.build_langton_set_twt(lamb, rule_set, index_list)
+                if new_rule_set == True:
+                    self.build_langton_set_twt()
 
     def draw(self):
         """Draws the current state of the grid."""
