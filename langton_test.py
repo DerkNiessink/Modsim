@@ -7,7 +7,7 @@ Jenna de Vries and Derk Niessink
 This module contains the class "CALangtonTest":
 
 "CALangtonTest" is a class for testing a 1D celullar automaton (CA) using the
-Langton parameter. Both the "random table" and "table-walkthrough" methods for
+Langton parameter. Both the "random table" and "table-walkthrough" techniques for
 building the rule table are implemented and can be executed with respectively the
 "sweep_langton_rt" and the "sweep_langton_twt" method.
 
@@ -15,8 +15,8 @@ The class allows plotting the Shannon entropy against the langton parameters
 with the "plot" method and are saved as "langton_rt.png" and "langton_twt.png"
 for respectively the "random_table" and the "table-walkthrough" method.
 
-For test parameters k=2 and r=1 and method "random-table", a colored figure
-with colors following the Wolframm classes from "rule_class_wolfram.csv can
+For test parameters k=2 and r=1 and technique "random-table", a colored figure
+with colors following the Wolframm classes from "rule_class_wolfram.csv" can
 be plotted using the "plot-colors" method.
 """
 
@@ -162,6 +162,7 @@ class CALangtonTest:
         """For this plot function only use k=2 r=1, the given Wolfram class list
         only includes the rule sets for these parameters. The max rule set is
         255."""
+
         figure = plt.figure(figsize=(10, 10))
 
         color_list = ["purple", "blue", "red", "green", "purple"]
