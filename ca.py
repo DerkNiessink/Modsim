@@ -68,6 +68,11 @@ class CASim(Model):
         self.twt_rule_set = [0] * self.rule_set_size
         self.twt_index_list = [i for i in range(self.rule_set_size)]
         self.twt_lamb = 0
+    
+    def init_rt(self):
+        self.lamb_list = []
+        self.rule_set_list = []
+        self.decimal_rule_list =[]
 
     def setter_rule(self, val):
         """Setter for the rule parameter, clipping its value between 0 and the
@@ -105,7 +110,23 @@ class CASim(Model):
 
         self.make_rule_dict(rule_set)
 
+        not_yet_in_list = self.lamb_list.count(lamb)
+        if not_yet_in_list == 0:
+            self.lamb_list.append(lamb)
+
+            power = self.k**(2*self.r+1) -1
+            decimal = 0
+            for i in rule_set:
+                decimal += int(i)*((self.k)**power)
+                power-=1
+            self.decimal_rule_list.append(decimal)
+            self.rule_set_list.append(rule_set)
+
+
     def build_langton_set_twt(self):
+        """Builds the rule set with the table-walk-through method. The initial state
+        exists only out of quiescent states, then for each new generation a random
+        bit is flipped to a random state (which is not the quiescent state)."""
         index = np.random.choice(self.twt_index_list)
         self.twt_index_list.remove(index)
         self.twt_rule_set[index] = np.random.randint(1, self.k)

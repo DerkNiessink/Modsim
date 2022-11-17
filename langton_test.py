@@ -1,8 +1,9 @@
 from ca import CASim
 from ca import configs
-
+from matplotlib.patches import Patch
 from collections import Counter
 import numpy as np
+import csv
 import matplotlib.pyplot as plt
 
 
@@ -17,6 +18,7 @@ class CALangtonTest:
         self.all_configs = configs(self.sim.r, self.sim.k)
         self.size = width * height
         self.sim.init_twt()
+        self.sim.init_rt()
 
     def run(self, mode, lamb=None, new_rule_test=True):
         t = 0
@@ -36,7 +38,6 @@ class CALangtonTest:
             for _ in range(N):
                 self.run(mode="random", lamb=lamb)
                 shannons.append(self.shannon(self.sim.config))
-
             self.add_lists(shannons, lamb)
 
     def sweep_langton_twt(self, N):
@@ -108,12 +109,77 @@ class CALangtonTest:
         )
         figure.savefig(file)
 
+    def csv_lst(self):
+        csv_filename = "rule_class_wolfram.csv"
+        with open(csv_filename) as f:
+            reader = csv.reader(f)
+            lst = list(reader)
+        return lst
+
+    def plot_colors(self, file: str):
+        # For this plot function only use k=2 r=1, the given Wolfram class list 
+        # only includes the rule sets for these parameters. The max rule set is 
+        # 255.
+        figure = plt.figure(figsize=(10, 10))
+
+        color_list = ["purple", "blue", "red", "green", "purple"]
+        ca_code_list = []
+        color_list_matched = []
+        ca_code_list_matched = []
+        lamb_list = self.sim.lamb_list
+        rule_list = self.sim.decimal_rule_list
+        lst = self.csv_lst()
+
+        for pair in lst:
+            ca_code = eval(pair[1])
+            ca_code_list.append(ca_code)
+
+        for rule in rule_list:
+            ca_code = ca_code_list[rule]
+            ca_code_list_matched.append(ca_code)
+            color_list_matched.append(color_list[(ca_code)])
+
+        plt.ylabel("Average H", fontsize=15)
+        plt.xlabel("$\lambda$", fontsize=15)
+        plt.title(
+            f"""Average Shannon entropy for the 1D CA (k = {self.sim.k}, r = {self.sim.r})
+            for width = {self.sim.width} and height = {self.sim.height}.""",
+            loc="center", fontsize=15
+        )
+        print(lamb_list, self.average_shannons, color_list_matched, rule_list)
+        plt.errorbar(
+            lamb_list,
+            self.average_shannons,
+            yerr=self.errors,
+            fmt=".",
+            ecolor=color_list_matched,
+            mfc="black",
+            mec="black",
+        )
+        figure.savefig(file)
+
+        plt.scatter(lamb_list, self.average_shannons, c=color_list_matched, marker="o")
+
+        legend_elements = [
+            Patch(facecolor=color, edgecolor="w")
+            for color in ["blue", "red", "green", "purple"]
+        ]
+
+        plt.legend(
+            handles=legend_elements,
+            labels=[f"Class 1", f"Class 2", f"Class 3", f"Class 4"],
+            loc="upper left",
+            bbox_to_anchor=[1, 1],
+        )
+        plt.figure(figsize=(10, 10))
+        figure.savefig("langton_rt_colorized", bbox_inches="tight")
+
 
 if __name__ == "__main__":
-    test = CALangtonTest(width=64, height=64, k=4, r=1)
+    test = CALangtonTest(width=50, height=100, k=2, r=1)
 
     test.sweep_langton_rt(N=20, steps=30)
-    test.plot("langton_rt")
+    test.plot_colors("langton_rt")
 
     test.sweep_langton_twt(N=20)
     test.plot("langton_twt")
