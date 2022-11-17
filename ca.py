@@ -4,18 +4,15 @@
 Developed by:
 Jenna de Vries and Derk Niessink
 
-This module contains two classes:
+This module contains the class "CASim:
 
-- "CASim": class for running a 1D celullar automaton (CA) with a GUI.
+- "CASim": class for running a 1D celullar automaton (CA) with a GUI. The class
+allows three different methods of building the rule set:
 
-- "CASimFig" class for measuring and plotting the average cycle length per rule.
-
-Run this module as "Ca.py gui" to start up the gui. Running this module just as
-"Ca.py" will run the simulation for all rules and generate the plot in the file:
-"cycle_lengths.png". The parameters of the CA can be adjusted in the bottom of
-this file. The plot is colored in with data from the file: "rule_class_wolfram.csv".
+- Based on rule numbers:        "build_rule_set"
+- Langton random table:         "build_langton_set_rt"
+- Langton table-walkthrough:    "build_langton_set_twt"
 """
-
 
 import numpy as np
 import matplotlib.pyplot as plt
@@ -40,9 +37,22 @@ def decimal_to_base_k(n, k, r):
     return new_base
 
 
+def base_k_to_decimal(n: list, k, r):
+    """Converts a list which contains a number in base-k to its decimal
+    (i.e. base-10 integer) equivalent"""
+
+    power = k ** (2 * r + 1) - 1
+    decimal = 0
+    for i in n:
+        decimal += int(i) * ((k) ** power)
+        power -= 1
+    return decimal
+
+
 def configs(r, k):
     """Create list with all possible configurations for a specific base-k and
     range r."""
+
     max_index = k ** (2 * r + 1) - 1
     return [decimal_to_base_k(i, k, r) for i in np.arange(max_index, -1, -1)]
 
@@ -68,11 +78,6 @@ class CASim(Model):
         self.twt_rule_set = [0] * self.rule_set_size
         self.twt_index_list = [i for i in range(self.rule_set_size)]
         self.twt_lamb = 0
-    
-    def init_rt(self):
-        self.lamb_list = []
-        self.rule_set_list = []
-        self.decimal_rule_list =[]
 
     def setter_rule(self, val):
         """Setter for the rule parameter, clipping its value between 0 and the
@@ -100,33 +105,21 @@ class CASim(Model):
         probability of 1 - lamb to be set in the quiescent state (= 0),
         else set the rule to be in a random state."""
 
-        rule_set = []
+        self.rt_rule_set = []
         for _ in range(self.rule_set_size):
             g = np.random.rand()
             if g > lamb:
-                rule_set.append(0)
+                self.rt_rule_set.append(0)
             else:
-                rule_set.append(np.random.randint(1, self.k))
+                self.rt_rule_set.append(np.random.randint(1, self.k))
 
-        self.make_rule_dict(rule_set)
-
-        not_yet_in_list = self.lamb_list.count(lamb)
-        if not_yet_in_list == 0:
-            self.lamb_list.append(lamb)
-
-            power = self.k**(2*self.r+1) -1
-            decimal = 0
-            for i in rule_set:
-                decimal += int(i)*((self.k)**power)
-                power-=1
-            self.decimal_rule_list.append(decimal)
-            self.rule_set_list.append(rule_set)
-
+        self.make_rule_dict(self.rt_rule_set)
 
     def build_langton_set_twt(self):
         """Builds the rule set with the table-walk-through method. The initial state
         exists only out of quiescent states, then for each new generation a random
         bit is flipped to a random state (which is not the quiescent state)."""
+
         index = np.random.choice(self.twt_index_list)
         self.twt_index_list.remove(index)
         self.twt_rule_set[index] = np.random.randint(1, self.k)
@@ -138,6 +131,7 @@ class CASim(Model):
     def make_rule_dict(self, rule_set):
         """Make a dictionary with all configurations as keys and the
         corresponding rules as values"""
+
         configurations = configs(self.r, self.k)
         for config, rule in zip(configurations, rule_set):
             self.rule_dict[f"{config}"] = rule
