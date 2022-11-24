@@ -63,7 +63,7 @@ class CASim(Model):
         self.make_param("k", 2)
         self.make_param("width", 50)
         self.make_param("height", 50)
-        self.rule=184
+        self.rule = 184
 
     def setter_rule(self, val):
         """Setter for the rule parameter, clipping its value between 0 and the
@@ -97,12 +97,21 @@ class CASim(Model):
         return self.rule_dict[f"{inp}"]
 
     def setup_initial_row(self):
-        """Returns an array of length `width' with the initial state for each of
-        the cells in the first row. Values should be between 0 and k."""
+        """First sets initial row with all zeroes, then replaces the amount of
+        wanted cars with ones."""
 
-        initial_row = [
-            1 if random() > 1-self.init_row_prob else 0 for _ in range(self.width)
-        ]
+        initial_row = [0 for _ in range(self.width)]
+        index_list = []
+        index = 0
+        for _ in initial_row:
+            index_list.append(int(index))
+            index += 1
+
+        for _ in range(int(self.init_row_prob * self.width)):
+            choice = np.random.choice(index_list)
+            index_list.remove(choice)
+            initial_row[choice] = 1
+
         return initial_row
 
     def reset(self):
@@ -142,7 +151,7 @@ class CASim(Model):
             loc="upper left",
             bbox_to_anchor=[1, 1],
         )
-        plt.title("car density 0.9")
+        plt.title(f"car density {self.init_row_prob}")
 
     def step(self):
         """Performs a single step of the simulation by advancing time (and thus
@@ -163,12 +172,11 @@ class CASim(Model):
             values = [int(value) for value in values]
             self.config[self.t, patch] = self.check_rule(values)
 
+
 if __name__ == "__main__":
 
-    if len(sys.argv) > 1 and sys.argv[1] == "gui":
-        sim = CASim()
-        from pyics import GUI
+    sim = CASim()
+    from pyics import GUI
 
-        cx = GUI(sim)
-        cx.start()
-
+    cx = GUI(sim)
+    cx.start()
