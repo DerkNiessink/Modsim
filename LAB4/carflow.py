@@ -4,8 +4,21 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 
-def linear_interpolation(x1, x2, y1, y2, y):
-    return (y - y1) * (x2 - x1) / (y2 - y1) + x1
+def linear_interpolation(carflows, densities):
+        """Returns quadratric interpolated maximum given the x (densities) and y
+        (carflows) lists"""
+        max_index=carflows.index(max(carflows))
+
+        y1 = carflows[max_index-1]
+        y2 = carflows[max_index]
+        y3 = carflows[max_index+1]
+
+        x2 = densities[max_index]
+        x3 = densities[max_index+1]
+
+        difference= 0.5 * ( (y1-y3) / (y1-2*y2+y3))
+        x = x2+ (x3-x2)*difference
+        return x
 
 
 class CarFLow:
@@ -53,18 +66,18 @@ class CarFLow:
         self.probabilities = []
         self.times = []
 
-        max_index = real_carflows.index(max(real_carflows))
-        critical_density = real_densities[max_index]
-
-        for T in np.arange(10, 100, 10):
-            print(T)
-            correct = 0
-            for _ in range(5):
-
-                self.sweep_density(stepsize=0.1, N=5)
+        critical_density = linear_interpolation(real_carflows, real_densities)
+        print(critical_density)
+        for T in np.arange(3, 25, 1):
+            self.sim.height = T
+            correct=0
+            for _ in range(20):
+                self.sweep_density(0.05, 10)
+                guessed_density = linear_interpolation(self.all_carflows, self.densities)
+                print(T, guessed_density)
                 if (
                     critical_density - 0.05
-                    < max(self.densities)
+                    < guessed_density
                     < critical_density + 0.05
                 ):
                     correct += 1
@@ -73,6 +86,7 @@ class CarFLow:
             self.times.append(T)
 
     def plot_carflow(self):
+        plt.clf()
         plt.errorbar(
             self.densities, self.all_carflows, yerr=self.carflow_errors, fmt="."
         )
@@ -84,6 +98,7 @@ class CarFLow:
         plt.savefig("carflow.png")
 
     def plot_probabilities(self):
+        plt.clf()
         plt.plot(self.times, self.probabilities, ".")
         plt.xlabel("T")
         plt.ylabel("Probability correct")
@@ -91,8 +106,8 @@ class CarFLow:
 
 
 if __name__ == "__main__":
-    test = CarFLow(width=50, height=1000)
-    test.sweep_density(stepsize=0.05, N=5)
+    test = CarFLow(width=50, height=500)
+    test.sweep_density(stepsize=0.05, N=10)
     test.plot_carflow()
     test.sweep_time(test.all_carflows, test.densities)
     test.plot_probabilities()
