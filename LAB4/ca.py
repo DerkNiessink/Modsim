@@ -4,16 +4,9 @@
 Developed by:
 Jenna de Vries and Derk Niessink
 
-This module contains two classes:
+This module contains the class "CASim":
 
 - "CASim": class for running a 1D celullar automaton (CA) with a GUI.
-
-- "CASimFig" class for measuring and plotting the average cycle length per rule.
-
-Run this module as "Ca.py gui" to start up the gui. Running this module just as
-"Ca.py" will run the simulation for all rules and generate the plot in the file:
-"cycle_lengths.png". The parameters of the CA can be adjusted in the bottom of
-this file. The plot is colored in with data from the file: "rule_class_wolfram.csv".
 """
 
 
