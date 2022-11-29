@@ -15,6 +15,7 @@ class Model:
         humanInfectionProb=0.25,
         mosquitoInfectionProb=0.9,
         biteProb=1.0,
+        hungryTime=5,
     ):
         """
         Model parameters
@@ -27,12 +28,13 @@ class Model:
         self.humanInfectionProb = humanInfectionProb
         self.mosquitoInfectionProb = mosquitoInfectionProb
         self.biteProb = biteProb
-        # etc.
+        self.hungryTime = hungryTime
 
         """
         Data parameters
         To record the evolution of the model
         """
+        self.human_properties = []
         self.infectedCount = 0
         self.deathCount = 0
         # etc.
@@ -68,6 +70,8 @@ class Model:
             else:
                 state = "S"  # S for susceptible
             humanPopulation.append(Human(x, y, state))
+            self.human_properties.append((x, y, state, 0))
+
         return humanPopulation
 
     def set_mosquito_population(self, initMosquitoHungry):
@@ -99,6 +103,8 @@ class Model:
         """
         for i, m in enumerate(self.mosquitoPopulation):
             m.move(self.height, self.width)
+            m.update_hungriness(self.hungryTime)
+
             for h in self.humanPopulation:
                 if (
                     m.position == h.position
@@ -106,12 +112,9 @@ class Model:
                     and np.random.uniform() <= self.biteProb
                 ):
                     m.bite(h, self.humanInfectionProb, self.mosquitoInfectionProb)
-        """
-        To implement: set the hungry state from false to true after a
-                     number of time steps has passed.
-        """
 
         for j, h in enumerate(self.humanPopulation):
+            print(self.human_properties)
             """
             To implement: update the human population.
             """
@@ -133,6 +136,7 @@ class Mosquito:
         self.position = [x, y]
         self.hungry = hungry
         self.infected = False
+        self.time_not_hungry = 0
 
     def bite(self, human, humanInfectionProb, mosquitoInfectionProb):
         """
@@ -149,6 +153,12 @@ class Mosquito:
             if np.random.uniform() <= mosquitoInfectionProb:
                 self.infected = True
         self.hungry = False
+        self.time_not_hungry = 0
+
+    def update_hungriness(self, hungryTime):
+        self.time_not_hungry += 1
+        if self.time_not_hungry > hungryTime:
+            self.hungry = True
 
     def move(self, height, width):
         """
