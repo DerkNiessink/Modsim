@@ -4,10 +4,18 @@ import malaria_visualize
 
 
 class Model:
-    def __init__(self, width=50, height=50, nHuman=10, nMosquito=20,
-                 initMosquitoHungry=0.5, initHumanInfected=0.2,
-                 humanInfectionProb=0.25, mosquitoInfectionProb=0.9,
-                 biteProb=1.0):
+    def __init__(
+        self,
+        width=50,
+        height=50,
+        nHuman=10,
+        nMosquito=4,
+        initMosquitoHungry=0.5,
+        initHumanInfected=0.2,
+        humanInfectionProb=0.25,
+        mosquitoInfectionProb=0.9,
+        biteProb=1.0,
+    ):
         """
         Model parameters
         Initialize the model with the width and height parameters.
@@ -44,16 +52,21 @@ class Model:
         objects is initialized with the "infected" state.
         """
         humanPopulation = []
+        occupied_list = []
         for i in range(self.nHuman):
             x = np.random.randint(self.width)
             y = np.random.randint(self.height)
-            """
-            To implement: Humans may not have overlapping positions.
-            """
+
+            while (x, y) in occupied_list:
+                x = np.random.randint(self.width)
+                y = np.random.randint(self.height)
+
+            occupied_list.append((x, y))
+
             if (i / self.nHuman) <= initHumanInfected:
-                state = 'I'  # I for infected
+                state = "I"  # I for infected
             else:
-                state = 'S'  # S for susceptible
+                state = "S"  # S for susceptible
             humanPopulation.append(Human(x, y, state))
         return humanPopulation
 
@@ -87,10 +100,12 @@ class Model:
         for i, m in enumerate(self.mosquitoPopulation):
             m.move(self.height, self.width)
             for h in self.humanPopulation:
-                if m.position == h.position and m.hungry\
-                   and np.random.uniform() <= self.biteProb:
-                    m.bite(h, self.humanInfectionProb,
-                           self.mosquitoInfectionProb)
+                if (
+                    m.position == h.position
+                    and m.hungry
+                    and np.random.uniform() <= self.biteProb
+                ):
+                    m.bite(h, self.humanInfectionProb, self.mosquitoInfectionProb)
         """
         To implement: set the hungry state from false to true after a
                      number of time steps has passed.
@@ -127,10 +142,10 @@ class Mosquito:
         mosquito can be infected.
         After a mosquito bites it is no longer hungry.
         """
-        if self.infected and human.state == 'S':
+        if self.infected and human.state == "S":
             if np.random.uniform() <= humanInfectionProb:
-                human.state = 'I'
-        elif not self.infected and human.state == 'I':
+                human.state = "I"
+        elif not self.infected and human.state == "I":
             if np.random.uniform() <= mosquitoInfectionProb:
                 self.infected = True
         self.hungry = False
@@ -141,14 +156,8 @@ class Mosquito:
         """
         deltaX = np.random.randint(-1, 2)
         deltaY = np.random.randint(-1, 2)
-        """
-        To implement: the mosquitos may not leave the grid. There are two
-                      options:
-                      - fixed boundaries: if the mosquito wants to move off the
-                        grid choose a new valid move.
-                      - periodic boundaries: implement a wrap around i.e. if
-                        y+deltaY > ymax -> y = 0.
-        """
+
+        # % width and height for periodic boundary conditions
         self.position[0] = (self.position[0] + deltaX) % width
         self.position[1] = (self.position[1] + deltaY) % height
 
@@ -164,24 +173,26 @@ class Human:
         self.state = state
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     """
     Simulation parameters
     """
-    fileName = 'simulation'
+    fileName = "simulation"
     timeSteps = 100
     t = 0
     plotData = False
     """
     Run a simulation for an indicated number of timesteps.
     """
-    file = open(fileName + '.csv', 'w')
+    file = open(fileName + ".csv", "w")
     sim = Model()
     vis = malaria_visualize.Visualization(sim.height, sim.width)
-    print('Starting simulation')
+    print("Starting simulation")
     while t < timeSteps:
         [d1, d2] = sim.update()  # Catch the data
-        line = str(t) + ',' + str(d1) + ',' + str(d2) + '\n'  # Separate the data with commas
+        line = (
+            str(t) + "," + str(d1) + "," + str(d2) + "\n"
+        )  # Separate the data with commas
         file.write(line)  # Write the data to a .csv file
         vis.update(t, sim.mosquitoPopulation, sim.humanPopulation)
         t += 1
@@ -192,12 +203,12 @@ if __name__ == '__main__':
         """
         Make a plot by from the stored simulation data.
         """
-        data = np.loadtxt(fileName+'.csv', delimiter=',')
+        data = np.loadtxt(fileName + ".csv", delimiter=",")
         time = data[:, 0]
         infectedCount = data[:, 1]
         deathCount = data[:, 2]
         plt.figure()
-        plt.plot(time, infectedCount, label='infected')
-        plt.plot(time, deathCount, label='deaths')
+        plt.plot(time, infectedCount, label="infected")
+        plt.plot(time, deathCount, label="deaths")
         plt.legend()
         plt.show()
