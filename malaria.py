@@ -1,4 +1,5 @@
 import matplotlib.pyplot as plt
+from collections import Counter
 import numpy as np
 import malaria_visualize
 
@@ -8,14 +9,16 @@ class Model:
         self,
         width=50,
         height=50,
-        nHuman=10,
-        nMosquito=4,
+        nHuman=2000,
+        nMosquito=400,
         initMosquitoHungry=0.5,
-        initHumanInfected=0.2,
-        humanInfectionProb=0.25,
+        initHumanInfected=0.001,
+        humanInfectionProb=1,
         mosquitoInfectionProb=0.9,
         biteProb=1.0,
         hungryTime=5,
+        HumanDieProb=0.05,
+        dieTime=30,
     ):
         """
         Model parameters
@@ -29,12 +32,15 @@ class Model:
         self.mosquitoInfectionProb = mosquitoInfectionProb
         self.biteProb = biteProb
         self.hungryTime = hungryTime
+        self.HumanDieProb = HumanDieProb
+        self.dieTime = dieTime
 
         """
         Data parameters
         To record the evolution of the model
         """
         self.human_properties = []
+        self.occupied_cells = []
         self.infectedCount = 0
         self.deathCount = 0
         # etc.
@@ -54,25 +60,29 @@ class Model:
         objects is initialized with the "infected" state.
         """
         humanPopulation = []
-        occupied_list = []
         for i in range(self.nHuman):
-            x = np.random.randint(self.width)
-            y = np.random.randint(self.height)
-
-            while (x, y) in occupied_list:
-                x = np.random.randint(self.width)
-                y = np.random.randint(self.height)
-
-            occupied_list.append((x, y))
+            x, y = self.get_free_position()
+            self.occupied_cells.append((x, y))
 
             if (i / self.nHuman) <= initHumanInfected:
                 state = "I"  # I for infected
+                self.infectedCount += 1
             else:
                 state = "S"  # S for susceptible
             humanPopulation.append(Human(x, y, state))
             self.human_properties.append((x, y, state, 0))
 
         return humanPopulation
+
+    def get_free_position(self):
+        x = np.random.randint(self.width)
+        y = np.random.randint(self.height)
+
+        while (x, y) in self.occupied_cells:
+            x = np.random.randint(self.width)
+            y = np.random.randint(self.height)
+
+        return x, y
 
     def set_mosquito_population(self, initMosquitoHungry):
         """
@@ -101,7 +111,10 @@ class Model:
         2.  Update the human population. If a human dies remove it from the
             population, and add a replacement human.
         """
+
+        # Update musquito population
         for i, m in enumerate(self.mosquitoPopulation):
+
             m.move(self.height, self.width)
             m.update_hungriness(self.hungryTime)
 
@@ -113,12 +126,22 @@ class Model:
                 ):
                     m.bite(h, self.humanInfectionProb, self.mosquitoInfectionProb)
 
+        # Update human population
         for j, h in enumerate(self.humanPopulation):
-            print(self.human_properties)
-            """
-            To implement: update the human population.
-            """
 
+            h.update_sickness(self.dieTime)
+
+            if h.state == "I" and np.random.uniform() <= self.HumanDieProb:
+                # Remove dead  human
+                self.humanPopulation.pop(j)
+                self.occupied_cells.pop(j)
+
+                # Add newborn human
+                x, y = self.get_free_position()
+                self.humanPopulation.append(Human(x, y, "S"))
+                self.occupied_cells.append((x, y))
+
+        # Update data/statistics
         """
         To implement: update the data/statistics e.g. infectedCount,
                       deathCount, etc.
@@ -128,7 +151,7 @@ class Model:
 
 class Mosquito:
     def __init__(self, x, y, hungry):
-        """
+        """from collections import Counter
         Class to model the mosquitos. Each mosquito is initialized with a random
         position on the grid. Mosquitos can start out hungry or not hungry.
         All mosquitos are initialized infection free (this can be modified).
@@ -156,9 +179,10 @@ class Mosquito:
         self.time_not_hungry = 0
 
     def update_hungriness(self, hungryTime):
-        self.time_not_hungry += 1
-        if self.time_not_hungry > hungryTime:
-            self.hungry = True
+        if self.hungry == False:
+            self.time_not_hungry += 1
+            if self.time_not_hungry > hungryTime:
+                self.hungry = True
 
     def move(self, height, width):
         """
@@ -181,6 +205,13 @@ class Human:
         """
         self.position = [x, y]
         self.state = state
+        self.time_sick = 0
+
+    def update_sickness(self, sickTime):
+        if self.state == "I":
+            self.time_sick += 1
+            if self.time_sick > sickTime:
+                self.state = "Imm"
 
 
 if __name__ == "__main__":
@@ -188,7 +219,7 @@ if __name__ == "__main__":
     Simulation parameters
     """
     fileName = "simulation"
-    timeSteps = 100
+    timeSteps = 200
     t = 0
     plotData = False
     """
