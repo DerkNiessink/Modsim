@@ -12,7 +12,7 @@ class Model:
         nHuman=2000,
         nMosquito=400,
         initMosquitoHungry=0.5,
-        initHumanInfected=0.001,
+        initHumanInfected=0.003,
         humanInfectionProb=1,
         mosquitoInfectionProb=0.9,
         biteProb=1.0,
@@ -127,25 +127,25 @@ class Model:
                     m.bite(h, self.humanInfectionProb, self.mosquitoInfectionProb)
 
         # Update human population
+        self.infectedCount = 0
         for j, h in enumerate(self.humanPopulation):
 
             h.update_sickness(self.dieTime)
 
-            if h.state == "I" and np.random.uniform() <= self.HumanDieProb:
-                # Remove dead  human
-                self.humanPopulation.pop(j)
-                self.occupied_cells.pop(j)
+            if h.state == "I":
+                self.infectedCount += 1
 
-                # Add newborn human
-                x, y = self.get_free_position()
-                self.humanPopulation.append(Human(x, y, "S"))
-                self.occupied_cells.append((x, y))
+                if np.random.uniform() <= self.HumanDieProb:
+                    # Remove dead  human
+                    self.humanPopulation.pop(j)
+                    self.occupied_cells.pop(j)
+                    self.deathCount += 1
 
-        # Update data/statistics
-        """
-        To implement: update the data/statistics e.g. infectedCount,
-                      deathCount, etc.
-        """
+                    # Add newborn human
+                    x, y = self.get_free_position()
+                    self.humanPopulation.append(Human(x, y, "S"))
+                    self.occupied_cells.append((x, y))
+
         return self.infectedCount, self.deathCount
 
 
@@ -219,9 +219,9 @@ if __name__ == "__main__":
     Simulation parameters
     """
     fileName = "simulation"
-    timeSteps = 200
+    timeSteps = 400
     t = 0
-    plotData = False
+    plotData = True
     """
     Run a simulation for an indicated number of timesteps.
     """
@@ -251,5 +251,7 @@ if __name__ == "__main__":
         plt.figure()
         plt.plot(time, infectedCount, label="infected")
         plt.plot(time, deathCount, label="deaths")
+        plt.xlabel("Time")
+        plt.ylabel("Number of humans")
         plt.legend()
         plt.show()
