@@ -9,15 +9,17 @@ class Model:
         self,
         width=50,
         height=50,
-        nHuman=2000,
-        nMosquito=400,
+        nHuman=1250,
+        nMosquito=3000,
         initMosquitoHungry=0.5,
-        initHumanInfected=0.003,
-        humanInfectionProb=1,
+        initHumanInfected=0.01,
+        humanInfectionProb=0.9, 
         mosquitoInfectionProb=0.9,
-        biteProb=1.0,
-        hungryTime=5,
-        HumanDieProb=0.05,
+        biteProb=0.9,
+        hungryTime=4,
+        lifeSpan = 1000,
+        dieNaturalCauses = 0.01,
+        HumanDieProb=0.2,
         dieTime=30,
     ):
         """
@@ -32,7 +34,9 @@ class Model:
         self.mosquitoInfectionProb = mosquitoInfectionProb
         self.biteProb = biteProb
         self.hungryTime = hungryTime
+        self.lifeSpan = lifeSpan
         self.HumanDieProb = HumanDieProb
+        self.dieNaturalCauses = dieNaturalCauses
         self.dieTime = dieTime
 
         """
@@ -99,7 +103,7 @@ class Model:
                 hungry = True
             else:
                 hungry = False
-            mosquitoPopulation.append(Mosquito(x, y, hungry))
+            mosquitoPopulation.append(Mosquito(x, y, hungry, self.lifeSpan))
         return mosquitoPopulation
 
     def update(self):
@@ -117,6 +121,7 @@ class Model:
 
             m.move(self.height, self.width)
             m.update_hungriness(self.hungryTime)
+            m.update_infectioness(self.lifeSpan)
 
             for h in self.humanPopulation:
                 if (
@@ -146,11 +151,21 @@ class Model:
                     self.humanPopulation.append(Human(x, y, "S"))
                     self.occupied_cells.append((x, y))
 
+                elif np.random.uniform() <= self.dieNaturalCauses:
+                    # Remove dead  human, nothing is added to deathcount
+                    self.humanPopulation.pop(j)
+                    self.occupied_cells.pop(j)
+
+                    # Add newborn human
+                    x, y = self.get_free_position()
+                    self.humanPopulation.append(Human(x, y, "S"))
+                    self.occupied_cells.append((x, y))               
+
         return self.infectedCount, self.deathCount
 
 
 class Mosquito:
-    def __init__(self, x, y, hungry):
+    def __init__(self, x, y, hungry, lifeSpan):
         """from collections import Counter
         Class to model the mosquitos. Each mosquito is initialized with a random
         position on the grid. Mosquitos can start out hungry or not hungry.
@@ -160,6 +175,8 @@ class Mosquito:
         self.hungry = hungry
         self.infected = False
         self.time_not_hungry = 0
+        self.lifeSpan = lifeSpan
+        self.time_alive = np.random.randint(0,self.lifeSpan)
 
     def bite(self, human, humanInfectionProb, mosquitoInfectionProb):
         """
@@ -183,6 +200,12 @@ class Mosquito:
             self.time_not_hungry += 1
             if self.time_not_hungry > hungryTime:
                 self.hungry = True
+
+    def update_infectioness(self, lifeSpan):
+        if self.time_alive > lifeSpan:
+            self.infected = False
+        self.time_alive += 1
+    
 
     def move(self, height, width):
         """
@@ -219,7 +242,7 @@ if __name__ == "__main__":
     Simulation parameters
     """
     fileName = "simulation"
-    timeSteps = 400
+    timeSteps = 1000
     t = 0
     plotData = True
     """
@@ -248,6 +271,7 @@ if __name__ == "__main__":
         time = data[:, 0]
         infectedCount = data[:, 1]
         deathCount = data[:, 2]
+        percentageInfectedCount = [_ / sim.nHuman for _ in data[:, 1]]
         plt.figure()
         plt.plot(time, infectedCount, label="infected")
         plt.plot(time, deathCount, label="deaths")
@@ -255,3 +279,10 @@ if __name__ == "__main__":
         plt.ylabel("Number of humans")
         plt.legend()
         plt.show()
+
+        plt.figure()
+        plt.plot(time, percentageInfectedCount, label="infected")
+        plt.xlabel("Time")
+        plt.ylabel("Percentage of humans")
+        plt.legend()
+        plt.show()       

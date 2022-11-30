@@ -55,7 +55,7 @@ class Visualization:
 
         plt.draw()
         plt.title('t = %i' % t)
-        plt.pause(0.1)
+        plt.pause(0.01)
 
     def persist(self):
         """
