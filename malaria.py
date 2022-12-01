@@ -11,16 +11,16 @@ class Model:
         height=50,
         nHuman=1250,
         nMosquito=3000,
-        initMosquitoHungry=0.5,
-        initHumanInfected=0.01,
+        initMosquitoHungry=0.14,
+        initHumanInfected=0.1,
         humanInfectionProb=0.9, 
         mosquitoInfectionProb=0.9,
         biteProb=0.9,
-        hungryTime=4,
-        lifeSpan = 1000,
-        dieNaturalCauses = 0.01,
-        HumanDieProb=0.2,
-        dieTime=30,
+        hungryTime=7,
+        lifeSpan = 56,
+        dieNaturalCauses = 1/21915,
+        HumanDieProb=1/14,
+        dieTime=56,
     ):
         """
         Model parameters
@@ -121,7 +121,7 @@ class Model:
 
             m.move(self.height, self.width)
             m.update_hungriness(self.hungryTime)
-            m.update_infectioness(self.lifeSpan)
+            m.update_infectioness()
 
             for h in self.humanPopulation:
                 if (
@@ -176,7 +176,6 @@ class Mosquito:
         self.infected = False
         self.time_not_hungry = 0
         self.lifeSpan = lifeSpan
-        self.time_alive = np.random.randint(0,self.lifeSpan)
 
     def bite(self, human, humanInfectionProb, mosquitoInfectionProb):
         """
@@ -201,10 +200,11 @@ class Mosquito:
             if self.time_not_hungry > hungryTime:
                 self.hungry = True
 
-    def update_infectioness(self, lifeSpan):
-        if self.time_alive > lifeSpan:
+    def update_infectioness(self):
+        chanceToDie = 1/self.lifeSpan
+        rand = np.random.rand()
+        if rand < chanceToDie:
             self.infected = False
-        self.time_alive += 1
     
 
     def move(self, height, width):
