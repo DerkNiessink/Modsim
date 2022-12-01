@@ -9,10 +9,10 @@ class Model:
         self,
         width=50,
         height=50,
-        nHuman=1250,
-        nMosquito=3000,
+        nHuman=400,
+        nMosquito=4000,
         initMosquitoHungry=0.14,
-        initHumanInfected=0.1,
+        initHumanInfected=0.3,
         humanInfectionProb=0.9, 
         mosquitoInfectionProb=0.9,
         biteProb=0.9,
@@ -20,7 +20,9 @@ class Model:
         lifeSpan = 56,
         dieNaturalCauses = 1/21915,
         HumanDieProb=1/14,
-        dieTime=56,
+        dieTime=28,
+        isolation=False,
+        incubationPeriod=19
     ):
         """
         Model parameters
@@ -38,6 +40,8 @@ class Model:
         self.HumanDieProb = HumanDieProb
         self.dieNaturalCauses = dieNaturalCauses
         self.dieTime = dieTime
+        self.isolation = isolation
+        self.incubationPeriod=incubationPeriod
 
         """
         Data parameters
@@ -135,9 +139,9 @@ class Model:
         self.infectedCount = 0
         for j, h in enumerate(self.humanPopulation):
 
-            h.update_sickness(self.dieTime)
+            h.update_sickness(self.dieTime, self.incubationPeriod, self.isolation)
 
-            if h.state == "I":
+            if h.state == "I" or h.state == "Q":
                 self.infectedCount += 1
 
                 if np.random.uniform() <= self.HumanDieProb:
@@ -151,15 +155,15 @@ class Model:
                     self.humanPopulation.append(Human(x, y, "S"))
                     self.occupied_cells.append((x, y))
 
-                elif np.random.uniform() <= self.dieNaturalCauses:
-                    # Remove dead  human, nothing is added to deathcount
-                    self.humanPopulation.pop(j)
-                    self.occupied_cells.pop(j)
+            if np.random.uniform() <= self.dieNaturalCauses:
+                # Remove dead  human, nothing is added to deathcount
+                self.humanPopulation.pop(j)
+                self.occupied_cells.pop(j)
 
-                    # Add newborn human
-                    x, y = self.get_free_position()
-                    self.humanPopulation.append(Human(x, y, "S"))
-                    self.occupied_cells.append((x, y))               
+                # Add newborn human
+                x, y = self.get_free_position()
+                self.humanPopulation.append(Human(x, y, "S"))
+                self.occupied_cells.append((x, y))               
 
         return self.infectedCount, self.deathCount
 
@@ -230,9 +234,13 @@ class Human:
         self.state = state
         self.time_sick = 0
 
-    def update_sickness(self, sickTime):
-        if self.state == "I":
+    def update_sickness(self, sickTime, incubationPeriod, isolation):
+        if self.state == "I" or self.state == "Q":
             self.time_sick += 1
+
+            if self.time_sick > incubationPeriod and isolation==True:
+                self.state = "Q"
+
             if self.time_sick > sickTime:
                 self.state = "Imm"
 
@@ -242,7 +250,7 @@ if __name__ == "__main__":
     Simulation parameters
     """
     fileName = "simulation"
-    timeSteps = 1000
+    timeSteps = 800
     t = 0
     plotData = True
     """
@@ -260,6 +268,7 @@ if __name__ == "__main__":
         file.write(line)  # Write the data to a .csv file
         vis.update(t, sim.mosquitoPopulation, sim.humanPopulation)
         t += 1
+        print(t)
     file.close()
     vis.persist()
 
