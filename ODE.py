@@ -12,7 +12,7 @@ def func_b(x, t):
 def func_c(x,t):
     return -x
 
-def euler(stepsize, a, b, initial_condition, func, name, label, color):
+def euler(stepsize, a, b, initial_condition, func, name, label, color, alpha):
     x_estimate_list, t_list = [], []
     x_previous = initial_condition
     t_previous = a
@@ -26,14 +26,15 @@ def euler(stepsize, a, b, initial_condition, func, name, label, color):
 
     plt.ylim(-5, 5)
     plt.xlim(0,3)
-    plt.plot(t_list, x_estimate_list, label=label, alpha=0.4, color=color)
+    plt.plot(t_list, x_estimate_list, label=label, alpha=alpha, color=color)
     plt.legend()
     plt.savefig(name)
 
 a, b = 0, 3
 stepsize_list=[1,0.1,0.01]
 alpha_list=[0.4, 0.6, 0.8]
-for stepsize in stepsize_list:
-    euler(stepsize, a, b, 0, func_a, 'a.png', 'a', 'r')
-    euler(stepsize, a, b, -4, func_b, 'a.png', 'b', 'b')
-    euler(stepsize, a, b, 4, func_c, 'a.png', 'c', 'g')
+for index in range(0,len(stepsize_list)):
+    alpha = alpha_list[index]
+    euler(stepsize_list[index], a, b, 0, func_a, 'a.png', 'a', 'r', alpha)
+    euler(stepsize_list[index], a, b, -4, func_b, 'a.png', 'b', 'b', alpha)
+    euler(stepsize_list[index], a, b, 4, func_c, 'a.png', 'c', 'g', alpha)
