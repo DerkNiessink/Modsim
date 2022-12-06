@@ -7,6 +7,19 @@ def concentration(t, k, g):
     return (np.exp(-k * t + C) - g) / (-k)
 
 
+def concentration_time(t, k, g, g_func):
+    C = np.log(g_func(t, g))
+    return (np.exp(-k * t + C) - g_func(t, g)) / (-k)
+
+
+def g_func1(t, g):
+    return -2 * g * (np.exp(-t) - 1)
+
+
+def g_func2(t, g):
+    return 2 * g * (np.exp(-t) + 1)
+
+
 def plot_concentration(t_range, x, k, g):
 
     plt.plot(t_range, x, label=f"g = {g}, k = {k}")
@@ -44,6 +57,9 @@ t_range = [t for t in np.arange(0, 5 + stepsize, stepsize)]
 params = [(2, 3), (1, 1.5), (2, 2), (1, 1)]
 
 
+"""
+4e
+"""
 plt.figure()
 for g, k in params:
     x = [concentration(t, k, g) for t in t_range]
@@ -52,9 +68,57 @@ plt.legend()
 plt.savefig("figures/4e.png")
 
 
+"""
+4f
+"""
 plt.figure()
 for g, k in params:
     t, x = euler(0.001, 0, 5, 0, func, g, k)
     plot_concentration(t, x, k, g)
 plt.legend()
 plt.savefig("figures/4f.png")
+
+
+"""
+4g
+"""
+plt.figure(figsize=(8, 6))
+for g, k in params:
+    x_list = [concentration(t, k, g) for t in t_range]
+    dx_dt_list = [func(x, 0, g, k) for x in x_list]
+    plt.plot(x_list, dx_dt_list, label=f"g = {g}, k = {k}")
+plt.grid(visible=True)
+plt.ylabel(r"$dx/dt$", fontsize=16)
+plt.xlabel(r"$x$", fontsize=16)
+plt.legend()
+plt.savefig("figures/4h.png")
+
+
+"""
+4i
+"""
+plt.figure()
+g1 = [g_func1(t, 1) for t in t_range]
+g2 = [g_func2(t, 1) for t in t_range]
+plt.plot(t_range, g1, label=r"$g(t) = -2g_0(e^{-t}-1)$")
+plt.plot(t_range, g2, label=r"$g(t) = 2g_0(e^{-t}+1)$")
+plt.xlabel("t", fontsize=16)
+plt.ylabel("g(t)", fontsize=16)
+plt.grid(visible=True)
+plt.legend()
+plt.savefig("figures/4i_1.png")
+
+plt.figure()
+x_gt = [concentration_time(t, 1, 1, g_func1) for t in t_range]
+x_gt2 = [concentration_time(t, 1, 1, g_func2) for t in t_range]
+x = [concentration(t, 1, 1) for t in t_range]
+x2 = [concentration(t, 1, 2) for t in t_range]
+plt.plot(t_range, x_gt, "--", label=r"$g(t) = -2g_0(e^{-t}-1)$")
+plt.plot(t_range, x_gt2, "--", label=r"$g(t) = 2g_0(e^{-t}+1)$")
+plt.plot(t_range, x, label=r"$g(t) = g = g_0$")
+plt.plot(t_range, x2, label=r"$g(t) = g = 2g_0$")
+plt.xlabel("t", fontsize=16)
+plt.ylabel("x(t)", fontsize=16)
+plt.grid(visible=True)
+plt.legend()
+plt.savefig("figures/4i_2.png")
