@@ -8,16 +8,16 @@ def concentration(t, k, g):
 
 
 def concentration_time(t, k, g, g_func):
-    C = np.log(g_func(t, g))
-    return (np.exp(-k * t + C) - g_func(t, g)) / (-k)
+    C = np.log(g_func(t, g, k))
+    return (np.exp(-k * t + C) - g_func(t, g, k)) / (-k)
 
 
-def g_func1(t, g):
-    return -2 * g * (np.exp(-t) - 1)
+def g_func1(t, g, k):
+    return -2 * g * (np.exp(-k * t) - 1)
 
 
-def g_func2(t, g):
-    return 2 * g * (np.exp(-t) + 1)
+def g_func2(t, g, k):
+    return 2 * g * (np.exp(-k * t) + 1)
 
 
 def plot_concentration(t_range, x, k, g):
@@ -98,10 +98,10 @@ plt.savefig("figures/4h.png")
 4i
 """
 plt.figure()
-g1 = [g_func1(t, 1) for t in t_range]
-g2 = [g_func2(t, 1) for t in t_range]
-plt.plot(t_range, g1, label=r"$g(t) = -2g_0(e^{-t}-1)$")
-plt.plot(t_range, g2, label=r"$g(t) = 2g_0(e^{-t}+1)$")
+g1 = [g_func1(t, 1, 1) for t in t_range]
+g2 = [g_func2(t, 1, 1) for t in t_range]
+plt.plot(t_range, g1, label=r"$g(t) = -2g_0(e^{-kt}-1)$")
+plt.plot(t_range, g2, label=r"$g(t) = 2g_0(e^{-kt}+1)$")
 plt.xlabel("t", fontsize=16)
 plt.ylabel("g(t)", fontsize=16)
 plt.grid(visible=True)
@@ -113,8 +113,8 @@ x_gt = [concentration_time(t, 1, 1, g_func1) for t in t_range]
 x_gt2 = [concentration_time(t, 1, 1, g_func2) for t in t_range]
 x = [concentration(t, 1, 1) for t in t_range]
 x2 = [concentration(t, 1, 2) for t in t_range]
-plt.plot(t_range, x_gt, "--", label=r"$g(t) = -2g_0(e^{-t}-1)$")
-plt.plot(t_range, x_gt2, "--", label=r"$g(t) = 2g_0(e^{-t}+1)$")
+plt.plot(t_range, x_gt, "--", label=r"$g(t) = -2g_0(e^{-kt}-1)$")
+plt.plot(t_range, x_gt2, "--", label=r"$g(t) = 2g_0(e^{-kt}+1)$")
 plt.plot(t_range, x, label=r"$g(t) = g = g_0$")
 plt.plot(t_range, x2, label=r"$g(t) = g = 2g_0$")
 plt.xlabel("t", fontsize=16)
