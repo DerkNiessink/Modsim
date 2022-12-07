@@ -32,6 +32,14 @@ def func(x, t, g, k):
     return g - k * x
 
 
+def rabbit_func(x, t, r, k):
+    return r * x**2 - k * x
+
+
+def rabbit_real_func(x, t, r, k):
+    return x * (1 - x / r)
+
+
 def euler(stepsize, a, b, initial_condition, func, g, k):
     x_estimate_list, t_list = [], []
     x_previous = initial_condition
@@ -122,3 +130,35 @@ plt.ylabel("x(t)", fontsize=16)
 plt.grid(visible=True)
 plt.legend()
 plt.savefig("figures/4i_2.png")
+
+"""
+4h
+"""
+plt.figure()
+t, x = euler(0.001, 0, 3, 0.5, rabbit_func, 1, 1)
+t2, x2 = euler(0.001, 0, 3, 1, rabbit_func, 1, 1)
+t3, x3 = euler(0.001, 0, 1, 1.5, rabbit_func, 1, 1)
+plt.plot(t, x, label=r"$x_0$ = 0.5")
+plt.plot(t2, x2, label=r"$x_0$ = 1")
+plt.plot(t3, x3, label=r"$x_0$ = 1.5")
+plt.xlabel("t", fontsize=16)
+plt.ylabel("x(t)", fontsize=16)
+plt.ylim(0, 3)
+plt.grid(visible=True)
+plt.legend()
+plt.savefig("figures/5h.png")
+
+"""
+4i
+"""
+plt.figure()
+values = [(3, 0.1), (0.5, 3), (1.5, 1.5)]
+for x_max, x_init in values:
+    t, x = euler(0.001, 0, 10, x_init, rabbit_real_func, x_max, None)
+    plt.plot(t, x, label=f"$x_0 = {x_init}, x_{{max}} = {x_max}$")
+
+plt.xlabel("t", fontsize=16)
+plt.ylabel("x(t)", fontsize=16)
+plt.grid(visible=True)
+plt.legend()
+plt.savefig("figures/5i.png")
