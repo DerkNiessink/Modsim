@@ -40,6 +40,10 @@ def rabbit_real_func(x, t, r, k):
     return x * (1 - x / r)
 
 
+def rabbit_die_func(x, t, r, k):
+    return x * (1 - x / r - k)
+
+
 def euler(stepsize, a, b, initial_condition, func, g, k):
     x_estimate_list, t_list = [], []
     x_previous = initial_condition
@@ -132,7 +136,7 @@ plt.legend()
 plt.savefig("figures/4i_2.png")
 
 """
-4h
+5h
 """
 plt.figure()
 t, x = euler(0.001, 0, 3, 0.5, rabbit_func, 1, 1)
@@ -149,7 +153,7 @@ plt.legend()
 plt.savefig("figures/5h.png")
 
 """
-4i
+5i
 """
 plt.figure()
 values = [(3, 0.1), (0.5, 3), (1.5, 1.5)]
@@ -162,3 +166,34 @@ plt.ylabel("x(t)", fontsize=16)
 plt.grid(visible=True)
 plt.legend()
 plt.savefig("figures/5i.png")
+
+"""
+5j
+"""
+plt.figure()
+x_max = 6
+x_list = [x for x in np.arange(-1, x_max + 1, 0.001)]
+dx_dt = [rabbit_real_func(x, None, x_max, None) for x in x_list]
+plt.plot(x_list, dx_dt)
+plt.xlabel("x", fontsize=16)
+plt.ylabel(r"$dx/dt$", fontsize=16)
+plt.grid(visible=True)
+plt.savefig("figures/5l.png")
+
+"""
+5o
+"""
+plt.figure()
+x_max = 6
+r = 2
+stepsizes = [0.25, 0.19, 0.16, 0.1]
+for stepsize in stepsizes:
+    t, x = euler(stepsize, 0, 3, 25, rabbit_die_func, x_max, r)
+    plt.plot(t, x, label=f"step size = {stepsize}")
+
+plt.xlabel(r"$t$", fontsize=16)
+plt.ylabel(r"$x(t)$", fontsize=16)
+plt.ylim(-2, 10)
+plt.legend()
+plt.grid(visible=True)
+plt.savefig("figures/5o.png")
