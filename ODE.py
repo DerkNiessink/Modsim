@@ -246,35 +246,9 @@ def exercise_3_bonus():
     pass
 
 
-def rabbit_func(r, k, t, N_i):
+def rabbit_solution(r, k, t, N_i):
     x = N_i * (np.e ** ((r - k) * t))
     return x
-
-
-def plot(r, k, N_i):
-    t_list = np.linspace(0, 30, 1000)
-    x_list = []
-    for t in t_list:
-        x = rabbit_func(r, k, t, N_i)
-        x_list.append(x)
-    plt.plot(t_list, x_list, label=f"r = {r}, k = {k}")
-    plt.grid(visible=True)
-    plt.xlim(0, 30)
-    plt.ylim(-5, 200)
-
-    plt.xlabel("t", fontsize=16)
-    plt.ylabel("x(t)", fontsize=16)
-
-    return x_list
-
-
-plt.figure()
-x_list1 = plot(1, 1, 25)
-x_list2 = plot(1, 2, 25)
-x_list3 = plot(2, 1, 25)
-
-plt.legend()
-plt.savefig("5cd.png")
 
 
 def fixed_point(xlist):
@@ -474,6 +448,21 @@ plt.savefig("5k.png")
 """
 5c/d
 """
+plt.figure()
+values = [(1, 1), (1, 2), (2, 1)]
+N_i = 25
+t_list = np.linspace(0, 30, 1000)
+for r, k in values:
+    x_list = [rabbit_solution(r, k, t, N_i) for t in t_list]
+    plt.plot(t_list, x_list, label=f"r = {r}, k = {k}")
+plt.grid(visible=True)
+plt.xlim(0, 30)
+plt.ylim(-5, 200)
+
+plt.xlabel("t", fontsize=16)
+plt.ylabel("x(t)", fontsize=16)
+plt.legend()
+plt.savefig("5cd.png")
 
 
 """
