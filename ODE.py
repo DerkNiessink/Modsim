@@ -8,7 +8,7 @@ At the bottom of this module (indicated by the line) we implemented the
 exercises in order. Functions used in these exercises can be quickly accessed
 by CTRL+clicking the function call.
 
-Figures will be saved in the current directory.
+When running this file, figures will be saved in the current directory.
 """
 
 
