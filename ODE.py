@@ -7,6 +7,8 @@ Jenna de Vries and Derk Niessink
 At the bottom of this module (indicated by the line) we implemented the
 exercises in order. Functions used in these exercises can be quickly accessed
 by CTRL+clicking the function call.
+
+Figures will be saved in the current directory.
 """
 
 
@@ -305,6 +307,11 @@ def rabbit_die_func(x, t, r, k):
 
 
 def euler(stepsize, a, b, initial_condition, func, g, k):
+    """
+    Calculates positions and times of an ODE with two parameters (g and k)
+    using the euler approximation given the stepsize, a range (a,b), an initial
+    condition and a function.
+    """
     x_estimate_list, t_list = [], []
     x_previous = initial_condition
     t_previous = a
