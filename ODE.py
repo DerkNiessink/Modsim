@@ -270,8 +270,12 @@ def concentration(t, k, g):
 
 
 def concentration_time(t, k, g, g_func):
-    C = np.log(g_func(t, g, k))
-    return (np.exp(-k * t + C) - g_func(t, g, k)) / (-k)
+    # prevent RunTimeWarning (np.log(0))
+    if g_func(t, g, k) == 0:
+        return 0
+    else:
+        C = np.log(g_func(t, g, k))
+        return (np.exp(-k * t + C) - g_func(t, g, k)) / (-k)
 
 
 def g_func1(t, g, k):
@@ -458,12 +462,12 @@ plt.savefig("5k.png")
 plt.figure()
 values = [(1, 1), (1, 2), (2, 1)]
 N_i = 25
-t_list = np.linspace(0, 30, 1000)
+t_list = np.linspace(0, 5, 1000)
 for r, k in values:
     x_list = [rabbit_solution(r, k, t, N_i) for t in t_list]
     plt.plot(t_list, x_list, label=f"r = {r}, k = {k}")
 plt.grid(visible=True)
-plt.xlim(0, 30)
+plt.xlim(0, 5)
 plt.ylim(-5, 200)
 
 plt.xlabel("t", fontsize=16)
