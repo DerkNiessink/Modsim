@@ -168,6 +168,36 @@ plt.legend()
 plt.savefig("figures/5i.png")
 
 """
+4k
+"""
+plt.figure()
+values = [(3, 0.1), (0.5, 3), (1.5, 1.5)]
+
+t_list = np.linspace(0, 10)
+plt.plot(t_list, t_list, label="t")
+
+x_dict = {}
+fixed_point_list = []
+for x_max, x_init in values:
+    t, x = euler(0.001, 0, 10, x_init, rabbit_real_func, x_max, None)
+    plt.plot(t, x, label=f"$x_0 = {x_init}, x_{{max}} = {x_max}$")
+
+    fixed_points = [i for i, j in zip(t, x) if round(i, 2) == round(j, 2)]
+    fixed_point_list.append(np.mean(fixed_points))
+
+print(values)
+print(fixed_point_list)
+
+plt.scatter(fixed_point_list, fixed_point_list)
+plt.xlabel("t", fontsize=16)
+plt.ylabel("x(t)", fontsize=16)
+plt.grid(visible=True)
+plt.legend()
+plt.xlim(0, 3)
+plt.ylim(0, 3)
+plt.savefig("figures/5k.png")
+
+"""
 5j
 """
 plt.figure()
