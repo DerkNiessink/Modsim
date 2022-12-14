@@ -5,7 +5,11 @@ from random import random
 
 
 class SI_model:
-    def __init__(self, N: int, k: int, i: float, init_i: float):
+    """Susceptible-Infected model for networks"""
+
+    def __init__(
+        self, N: int, k: int, i: float, init_i: float, network: str, power=None
+    ):
         """
         Initialize the graph and set the initial number of infected nodes.
 
@@ -13,13 +17,35 @@ class SI_model:
         k: The number of edges in the graph.
         i: The infection probability.
         init_i: The initial probability that a node is infected.
+        network: Can be "random" or "scale_free"
+        power: Power for the powerlaw_sequence of the "scale_free" network
+               with default None.
         """
-        self.G = nx.fast_gnp_random_graph(n=N, p=k / N)
+
         self.k = k
         self.i = i
         self.N = N
+        self.G = self.setup_network(network, power)
         self.init_i = init_i
         self.reset()
+
+    def setup_network(self, network: str, power=None):
+        """
+        Setup the desired network specified in "network".
+
+        network: Can be "random" or "scale_free"
+        power: Power for the powerlaw_sequence of the "scale_free network
+               with default None.
+
+        Returns the desired nx network.
+        """
+        if network == "random":
+            return nx.fast_gnp_random_graph(n=self.N, p=self.k / self.N)
+
+        if network == "scale_free":
+            s = nx.utils.powerlaw_sequence(self.N, power)
+            s = s / np.mean(s) * self.k
+            return nx.expected_degree_graph(s, selfloops=False)
 
     def init_infected(self, i: float):
         """
@@ -125,10 +151,10 @@ def ex_simulation(model: SI_model, reps: int, t_steps: int):
 
 if __name__ == "__main__":
 
-    model1 = SI_model(N=10**5, k=5, i=0.01, init_i=0.1)
-    model2 = SI_model(N=10**5, k=0.8, i=0.1, init_i=0.1)
+    model1 = SI_model(N=10**5, k=5, i=0.01, init_i=0.1, network="random")
+    model2 = SI_model(N=10**5, k=0.8, i=0.1, init_i=0.1, network="random")
 
-    t_steps = 200
+    t_steps = 25
     reps = 2
 
     plt.figure()
