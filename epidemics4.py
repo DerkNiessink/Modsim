@@ -7,7 +7,7 @@ import matplotlib.pyplot as plt
 model1 = SI_model(N=10**5, k=5, i=0.01, init_i=0.1, network="random")
 model2 = SI_model(N=10**5, k=5, i=0.01, init_i=0.1, network="scale_free", power=2.5)
 
-t_steps = 100
+t_steps = 200
 reps = 1
 
 plt.figure()
