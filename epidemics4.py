@@ -1,3 +1,11 @@
+"""
+"epidemics4.py"
+- Developed by Jenna de Vries and Derk Niessink
+
+Graphs will be saved in the current working directory.
+"""
+
+
 from epidemics1 import SI_model
 from epidemics1 import ex_simulation
 

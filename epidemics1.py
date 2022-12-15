@@ -1,3 +1,11 @@
+"""
+"epidemics1.py"
+- Developed by Jenna de Vries and Derk Niessink
+
+Graphs will be saved in the current working directory.
+"""
+
+
 import networkx as nx
 import matplotlib.pyplot as plt
 import numpy as np
@@ -166,14 +174,21 @@ def ex_simulation(model: SI_model, reps: int, t_steps: int) -> tuple[list, list]
     return norm_prevalences
 
 
-def R0(infections):
-    R0_list, index_list = [], []
-    for index in range(0, len(infections) - 1):
-        R0 = (infections[index + 1] / infections[index]) - 1
-        R0_list.append(R0)
-        index_list.append(index)
+def R0(norm_prevalences: list) -> tuple[list, list]:
+    """
+    Compute the R0 value for each time step.
 
-    return index_list, R0_list
+    infections: list of normalized prevalences for each timestep.
+
+    Returns a list of the time range and the R0 values in a tuple.
+    """
+    R0_list, time = [], []
+    for index in range(0, len(norm_prevalences) - 1):
+        R0 = (norm_prevalences[index + 1] / norm_prevalences[index]) - 1
+        R0_list.append(R0)
+        time.append(index)
+
+    return time, R0_list
 
 
 if __name__ == "__main__":

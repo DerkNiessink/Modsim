@@ -1,3 +1,11 @@
+"""
+"epidemics3.py"
+- Developed by Jenna de Vries and Derk Niessink
+
+Graphs will be saved in the current working directory.
+"""
+
+
 import matplotlib.pyplot as plt
 from epidemics1 import SI_model
 from epidemics1 import ex_simulation
