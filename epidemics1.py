@@ -53,16 +53,17 @@ class SI_model:
 
         i: The probability that a node is initially infected.
         """
-        N_i = self.N * i
-        # while self.nInfected < N_i:
+        target_count = round(
+            len(self.G.nodes) * i
+        )  # target number of infected nodes is i times all nodes
+        infected_nodes = np.random.choice(
+            list(self.G.nodes), target_count, replace=False
+        )  # select target_count number of nodes without replacement
         for node in self.G.nodes:
-            if random() <= i:
-                infected = True
-                self.nInfected += 1
-            else:
-                infected = False
-
+            infected = node in infected_nodes
             self.G.nodes[node]["infected"] = infected
+
+        self.nInfected = len(infected_nodes)
 
     def update(self):
         """
@@ -152,12 +153,10 @@ def ex_simulation(model: SI_model, reps: int, t_steps: int) -> tuple[list, list]
     all_data = np.delete(all_data, (0), axis=0)
 
     norm_prevalences = list(np.average(all_data, axis=0))
-    time = [t for t in range(t_steps)]
-
     errors = list(np.std(all_data, axis=0))
 
     plt.errorbar(
-        time,
+        model.time,
         norm_prevalences,
         yerr=errors,
         fmt="-",
@@ -166,13 +165,14 @@ def ex_simulation(model: SI_model, reps: int, t_steps: int) -> tuple[list, list]
 
     return norm_prevalences
 
+
 def R0(infections):
-    R0_list, index_list=[], []
-    for index in range(0, len(infections)-1):
-        R0=(infections[index+1]/infections[index])-1
+    R0_list, index_list = [], []
+    for index in range(0, len(infections) - 1):
+        R0 = (infections[index + 1] / infections[index]) - 1
         R0_list.append(R0)
         index_list.append(index)
-    
+
     return index_list, R0_list
 
 
@@ -189,9 +189,18 @@ if __name__ == "__main__":
     model1_infected = ex_simulation(model1, reps, t_steps)
     model2_infected = ex_simulation(model2, reps, t_steps)
 
-    print("i) The R0 for model 1 (N=10**5, k=5, i=0.01) at t=0 equals", (R0(model1_infected)[1][0]))
-    print("ii) The R0 for model 2 (N=10**5, k=0.8, i=0.1) at t=0 equals", (R0(model2_infected)[1][0]))
-    print("The ratio between case i) and case ii) equals", round((R0(model1_infected)[1][0])/(R0(model2_infected)[1][0]),2))
+    print(
+        "i) The R0 for model 1 (N=10**5, k=5, i=0.01) at t=0 equals",
+        (R0(model1_infected)[1][0]),
+    )
+    print(
+        "ii) The R0 for model 2 (N=10**5, k=0.8, i=0.1) at t=0 equals",
+        (R0(model2_infected)[1][0]),
+    )
+    print(
+        "The ratio between case i) and case ii) equals",
+        round((R0(model1_infected)[1][0]) / (R0(model2_infected)[1][0]), 2),
+    )
 
     plt.xlabel("t", fontsize=14)
     plt.ylabel(r"$\frac{I}{N}$", fontsize=16)
