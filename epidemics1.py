@@ -65,7 +65,8 @@ class SI_model:
     def update(self):
         """
         Update the state of the graph by infecting the neighbors of infected
-        nodes and append the new normalized prevalence to the list.
+        nodes and keep track of the the normalized prevalence and the average
+        node degree of the new infected nodes.
         """
         self.t += 1
         infected_dict = nx.get_node_attributes(self.G, "infected")
@@ -75,6 +76,8 @@ class SI_model:
 
         self.norm_prevalences.append(self.nInfected / self.N)
         self.time.append(self.t)
+        self.avg_k_infections.append(np.mean(self.k_infections))
+        self.k_infections = []
 
     def infect_neighbours(self, node: int):
         """
@@ -87,12 +90,17 @@ class SI_model:
                 self.G.nodes[neighbor]["infected"] = True
                 self.nInfected += 1
 
+                # Keep track of the the degree of every node that gets infected.
+                self.k_infections.append(len(list(nx.all_neighbors(self.G, neighbor))))
+
     def reset(self):
         """
         Reset the simulation.
         """
         self.norm_prevalences = []
         self.time = []
+        self.k_infections = []
+        self.avg_k_infections = []
         self.nInfected = 0
         self.t = 0
         self.init_infected(self.init_i)
@@ -109,7 +117,7 @@ class SI_model:
         plt.savefig(fn)
 
 
-def ex_simulation(model: SI_model, reps: int, t_steps: int):
+def ex_simulation(model: SI_model, reps: int, t_steps: int) -> tuple[list, list]:
     """
     Execute the simulation of the SI model for a given number of time steps and
     repetitions. Plot the average and the standard deviation of the normalized
@@ -117,12 +125,15 @@ def ex_simulation(model: SI_model, reps: int, t_steps: int):
 
     reps: number of simulation repetitions.
     t_steps: number of time steps in the simulation.
+
+    Returns a list of the time range and the average normalized prevalences in
+    a tuple.
     """
 
     all_data = np.zeros(shape=t_steps)
 
     # Execute simulations for a number of reps
-    for _ in range(reps):
+    for i in range(reps):
 
         # Execute the simulation for a number of time steps
         for _ in range(t_steps):
@@ -130,7 +141,10 @@ def ex_simulation(model: SI_model, reps: int, t_steps: int):
 
         # Save normalized prevalences
         all_data = np.vstack([all_data, model.norm_prevalences])
-        model.reset()
+
+        # Let data of the last repetition be accessible
+        if i != reps - 1:
+            model.reset()
 
     # Delete initial row with zeros
     all_data = np.delete(all_data, (0), axis=0)
